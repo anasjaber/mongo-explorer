@@ -42,15 +42,14 @@ import {
     useToast,
     VStack,
 } from '@chakra-ui/react';
-import axios from 'axios';
 import { Select } from 'chakra-react-select';
 import { lazy, default as React, useCallback, useEffect, useState } from 'react';
 import { FaMagic } from 'react-icons/fa';
 import ReactJson from 'react-json-view';
 import { useLocation, useNavigate } from 'react-router-dom';
+import api from './api';
 
 const AIQueryGenerator = lazy(() => import('./AIQueryGenerator'));
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://localhost:7073/api';
 
 const useQuery = () => new URLSearchParams(useLocation().search);
 
@@ -93,7 +92,7 @@ const QueryManager = () => {
     const confirmDelete = async () => {
         setIsLoading(true);
         try {
-            await axios.delete(`${API_BASE_URL}/Query/${queryToDelete}`);
+            await api.delete(`/Query/${queryToDelete}`);
             handleSuccess('Query deleted', 'The query has been deleted successfully.');
             fetchQueries();
             fetchFavoriteQueries();
@@ -111,7 +110,7 @@ const QueryManager = () => {
     const fetchQueries = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/Query`, { params: { filter } });
+            const response = await api.get(`/Query`, { params: { filter } });
             setQueries(response.data.items || []);
         } catch (error) {
             handleError('Error fetching queries', error);
@@ -122,7 +121,7 @@ const QueryManager = () => {
     const fetchFavoriteQueries = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/Query/favorites`, { params: { filter } });
+            const response = await api.get(`/Query/favorites`, { params: { filter } });
             setFavoriteQueries(response.data || []);
         } catch (error) {
             handleError('Error fetching favorite queries', error);
@@ -132,7 +131,7 @@ const QueryManager = () => {
 
     const fetchConnections = useCallback(async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/MongoConnection`);
+            const response = await api.get(`/MongoConnection`);
             setConnections(response.data.items || []);
         } catch (error) {
             handleError('Error fetching connections', error);
@@ -141,7 +140,7 @@ const QueryManager = () => {
 
     const fetchCollections = useCallback(async (connectionId) => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/MongoConnection/${connectionId}/collections`);
+            const response = await api.get(`/MongoConnection/${connectionId}/collections`);
             setCollections(response.data || []);
         } catch (error) {
             handleError('Error fetching collections', error);
@@ -163,7 +162,7 @@ const QueryManager = () => {
     const fetchQueryById = async (id) => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/Query/${id}`);
+            const response = await api.get(`/Query/${id}`);
             setIsEditing(true);
             setCurrentQuery(response.data);
             await fetchCollections(response.data.connectionId);
@@ -183,10 +182,10 @@ const QueryManager = () => {
         setIsLoading(true);
         try {
             if (isEditing) {
-                await axios.put(`${API_BASE_URL}/Query/${currentQuery.id}`, currentQuery);
+                await api.put(`/Query/${currentQuery.id}`, currentQuery);
                 handleSuccess('Query updated', 'The query has been updated successfully.');
             } else {
-                await axios.post(`${API_BASE_URL}/Query`, currentQuery);
+                await api.post(`/Query`, currentQuery);
                 handleSuccess('Query added', 'New query has been added successfully.');
             }
             resetForm();
@@ -204,11 +203,11 @@ const QueryManager = () => {
         setSelectedQuery(query);
 
         try {
-            const response = await axios.post(`${API_BASE_URL}/Query/${query.id}/execute`);
+            const response = await api.post(`/Query/${query.id}/execute`);
             setQueryResult(response.data);
 
             if (download) {
-                const jsonResponse = await axios.get(`${API_BASE_URL}/Query/${query.id}/download-json`, {
+                const jsonResponse = await api.get(`/Query/${query.id}/download-json`, {
                     responseType: 'blob'
                 });
                 const url = window.URL.createObjectURL(new Blob([jsonResponse.data]));
@@ -259,7 +258,7 @@ const QueryManager = () => {
     const handleFetchSchema = async (connectionId, collectionName) => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/MongoSchema/${connectionId}?includedCollections=${collectionName}`);
+            const response = await api.get(`/MongoSchema/${connectionId}?includedCollections=${collectionName}`);
             setSchemaData(JSON.parse(response.data.formattedSchema));
             onOpenSchemaModal();
         } catch (error) {
@@ -270,7 +269,7 @@ const QueryManager = () => {
 
     const handleFavourite = async (query) => {
         try {
-            await axios.post(`${API_BASE_URL}/Query/${query.id}/favourite`, { isFavourite: !query.isFavourite });
+            await api.post(`/Query/${query.id}/favourite`, { isFavourite: !query.isFavourite });
             fetchQueries();
             fetchFavoriteQueries();
             handleSuccess('Favourite updated');

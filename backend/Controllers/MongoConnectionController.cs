@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class MongoConnectionController : ControllerBase
@@ -19,13 +22,15 @@ public class MongoConnectionController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PaginatedResult<MongoConnection>>> GetConnections([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        var totalConnections = await _context.MongoConnections.CountAsync();
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var totalConnections = await _context.MongoConnections.CountAsync(x=>x.UserId == userId);
         var totalPages = (int)Math.Ceiling(totalConnections / (double)pageSize);
 
         var connections = await _context.MongoConnections
             .OrderBy(c => c.Name)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Where(x => x.UserId == userId)
             .ToListAsync();
 
         var result = new PaginatedResult<MongoConnection>
@@ -54,6 +59,8 @@ public class MongoConnectionController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<MongoConnection>> CreateConnection(MongoConnection connection)
     {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        connection.UserId = userId;
         _context.MongoConnections.Add(connection);
         await _context.SaveChangesAsync();
         return CreatedAtAction(nameof(GetConnection), new { id = connection.Id }, connection);
@@ -192,6 +199,9 @@ public class MongoConnectionController : ControllerBase
 public class MongoConnection
 {
     public int Id { get; set; }
+
+    public int UserId { get; set; }
+
     [Required]
     public string Name { get; set; }
     [Required]

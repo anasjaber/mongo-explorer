@@ -20,14 +20,12 @@ import {
   useDisclosure,
   useToast
 } from '@chakra-ui/react';
-import axios from 'axios';
 import { Select } from 'chakra-react-select';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import { FaMagic, FaWpforms } from 'react-icons/fa';
 import ReactJson from 'react-json-view';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://localhost:7073/api';
+import api from './api';
 
 const AIQueryGenerator = ({ onClose, isDialog }) => {
   const [connections, setConnections] = useState([]);
@@ -56,7 +54,7 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
   const fetchConnections = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/MongoConnection`);
+      const response = await api.get(`/MongoConnection`);
       setConnections(Array.isArray(response.data) ? response.data : response.data.items || []);
     } catch (error) {
       handleError('Error fetching connections', error);
@@ -67,7 +65,7 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
   const fetchCollections = async (connectionId) => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/MongoConnection/${connectionId}/collections`);
+      const response = await api.get(`/MongoConnection/${connectionId}/collections`);
       setCollections(response.data || []);
     } catch (error) {
       handleError('Error fetching collections', error);
@@ -90,7 +88,7 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
     setIsLoading(true);
     try {
       const includedCollections = selectedCollections.map(collection => `includedCollections=${collection.value}`).join('&');
-      const response = await axios.get(`${API_BASE_URL}/MongoSchema/${selectedConnection.value}?${includedCollections}`);
+      const response = await api.get(`/MongoSchema/${selectedConnection.value}?${includedCollections}`);
       setSchema(JSON.parse(response.data.formattedSchema));
       onOpen();
     } catch (error) {
@@ -114,7 +112,7 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/AIQueryGenerator/generate`, {
+      const response = await api.post(`/AIQueryGenerator/generate`, {
         connectionId: selectedConnection.value,
         collectionNames: selectedCollections.map(collection => collection.value),
         naturalLanguageQuery

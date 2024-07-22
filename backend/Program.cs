@@ -1,6 +1,10 @@
 using Backend;
+using Backend.Controllers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +48,20 @@ builder.Services.AddCors(options =>
 // Add hosted service
 builder.Services.AddSingleton<QueryProfilerService>();
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+       .AddJwtBearer(options =>
+       {
+           options.TokenValidationParameters = new TokenValidationParameters
+           {
+               ValidateIssuerSigningKey = true,
+               IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["JwtConfig:secret"])),
+               ValidateIssuer = false,
+               ValidateAudience = false
+           };
+       });
+
+builder.Services.AddScoped<JwtService>();
+
 var app = builder.Build();
 
 // Enable Swagger and SwaggerUI in all environments
@@ -65,14 +83,17 @@ if (Environment.GetEnvironmentVariable("USE_HTTPS") == "true")
 
 app.UseCors("AllowFrontend");
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-app.UseAuthorization();
+app.UseAuthentication();
 app.UseRouting();
+
+app.UseAuthorization();
 
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers();
     endpoints.MapHub<QueryProfilerHub>("/queryProfilerHub");
 });
+
 
 app.MapControllers();
 
@@ -88,8 +109,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<MongoConnection> MongoConnections { get; set; }
     public DbSet<Query> Queries { get; set; }
     public DbSet<QueryLog> QueryLogs { get; set; }
-    public DbSet<ProfiledQuery> ProfiledQueries { get; set; }
     public DbSet<OpenAISettings> OpenAISettings { get; set; }
+    public DbSet<User> Users { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

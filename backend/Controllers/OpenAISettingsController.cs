@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Backend.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class OpenAISettingsController : ControllerBase
@@ -17,10 +20,13 @@ namespace Backend.Controllers
         [HttpGet]
         public async Task<ActionResult<OpenAISettings>> GetSettings()
         {
-            var settings = await _context.OpenAISettings.FirstOrDefaultAsync();
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var settings = await _context.OpenAISettings.FirstOrDefaultAsync(x => x.UserId == userId);
+
             if (settings == null)
             {
-                return NotFound();
+                return Ok(new OpenAISettings());
             }
             return Ok(settings);
         }
@@ -28,14 +34,21 @@ namespace Backend.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateSettings(OpenAISettings updatedSettings)
         {
-            var settings = await _context.OpenAISettings.FirstOrDefaultAsync();
+            var userId =int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var settings = await _context.OpenAISettings.FirstOrDefaultAsync(x=>x.UserId == userId);
             if (settings == null)
             {
-                return NotFound();
+                settings = new OpenAISettings();
             }
 
             settings.ApiKey = updatedSettings.ApiKey;
             settings.Model = updatedSettings.Model;
+            settings.UserId = userId;
+
+            if(settings.Id == 0)
+            {
+                await _context.OpenAISettings.AddAsync(settings);
+            }
 
             await _context.SaveChangesAsync();
             return NoContent();
@@ -47,6 +60,7 @@ namespace Backend.Controllers
 public class OpenAISettings
 {
     public int Id { get; set; }
+    public int UserId { get; set; }
     public string ApiKey { get; set; }
     public string Model { get; set; }
 }

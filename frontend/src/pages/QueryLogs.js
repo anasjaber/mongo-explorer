@@ -30,13 +30,12 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
-import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import { FaMagic } from 'react-icons/fa';
 import ReactJson from 'react-json-view';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://localhost:7073/api';
+import api from './api';
 
 const QueryLogs = () => {
   const [logs, setLogs] = useState([]);
@@ -66,7 +65,7 @@ const QueryLogs = () => {
   const fetchLogs = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/QueryLog`, {
+      const response = await api.get(`/QueryLog`, {
         params: {
           page: currentPage,
           pageSize: 10,
@@ -88,7 +87,7 @@ const QueryLogs = () => {
   const handleSuggestIndexes = async (query) => {
     setIsSuggestingIndexes(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/QueryProfiler/query-logs/suggest-indexes/${query.id}`);
+      const response = await api.get(`/QueryProfiler/query-logs/suggest-indexes/${query.id}`);
       // Ensure suggestedIndexes is always an array
       setSuggestedIndexes(Array.isArray(response.data) ? response.data : []);
       setSelectedQuery(query);
@@ -106,7 +105,7 @@ const QueryLogs = () => {
     const pipeline = JSON.stringify(pipelineVal.index);
     const collection = pipelineVal.collectionName;
     try {
-      await axios.post(`${API_BASE_URL}/QueryProfiler/query-logs/create-index`, {
+      await api.post(`/QueryProfiler/query-logs/create-index`, {
         queryId: selectedQuery.queryId,
         pipeline,
         collection

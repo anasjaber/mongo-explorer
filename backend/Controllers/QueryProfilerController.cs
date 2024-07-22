@@ -13,7 +13,9 @@ using Azure.Core;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Authorization;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class QueryProfilerController : ControllerBase
@@ -421,6 +423,7 @@ public class CreateIndexRequestForQueryLogs
 public class ProfiledQuery
 {
     public int Id { get; set; }
+    public int UserId { get; set; }
     public int ConnectionId { get; set; }
     public DateTime Timestamp { get; set; }
     public string Collection { get; set; }

@@ -16,7 +16,11 @@ using MongoDB.Bson.Serialization;
 using Microsoft.AspNetCore.Http;
 using System.Collections;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using System.Security.Claims;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class QueryController : ControllerBase
@@ -46,7 +50,8 @@ public class QueryController : ControllerBase
         }
 
         IQueryable<Query> query = _context.Queries;
-
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        query = query.Where(q => q.UserId == userId);
         if (!string.IsNullOrEmpty(filter))
         {
             query = query.Where(q =>
@@ -62,7 +67,7 @@ public class QueryController : ControllerBase
             query = query.Where(q => q.IsFavourite);
         }
 
-        var totalQueries = await query.CountAsync();
+        var totalQueries = await query.CountAsync(q=>q.UserId==userId);
         var totalPages = (int)Math.Ceiling(totalQueries / (double)pageSize);
 
         var queries = await query
@@ -113,6 +118,7 @@ public class QueryController : ControllerBase
     public async Task<ActionResult<Query>> CreateQuery(QueryCreateDto queryDto)
     {
         var connection = await _context.MongoConnections.FindAsync(queryDto.ConnectionId);
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
         if (connection == null)
         {
             return NotFound("Connection not found");
@@ -125,7 +131,8 @@ public class QueryController : ControllerBase
             Description = queryDto.Description,
             QueryText = queryDto.QueryText,
             CollectionName = queryDto.CollectionName,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UserId = userId
         };
 
         _context.Queries.Add(query);
@@ -350,6 +357,7 @@ public class QueryController : ControllerBase
 
     private async Task<(List<Dictionary<string, object>> Data, string Error)> ExecuteQueryInternal(int id)
     {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
         var query = await _context.Queries.Include(q => q.Connection).FirstOrDefaultAsync(q => q.Id == id);
         if (query == null)
         {
@@ -395,7 +403,8 @@ public class QueryController : ControllerBase
                 RunAt = DateTime.UtcNow,
                 RunBy = User.Identity.Name ?? "Anonymous", // Assuming you have authentication set up
                 Duration = stopwatch.Elapsed,
-                QueryText = query.QueryText
+                QueryText = query.QueryText,
+                UserId=userId
             };
 
             _context.QueryLogs.Add(queryLog);
@@ -473,6 +482,7 @@ public class FavouriteRequest
 public class Query
 {
     public int Id { get; set; }
+    public int UserId { get; set; }
     public int ConnectionId { get; set; }
     public string Title { get; set; }
     public string Description { get; set; }

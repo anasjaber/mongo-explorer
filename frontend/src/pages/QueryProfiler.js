@@ -32,13 +32,14 @@ import {
     VStack
 } from '@chakra-ui/react';
 import * as signalR from '@microsoft/signalr';
-import axios from 'axios';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FaMagic, FaPlus } from 'react-icons/fa';
 import ReactJson from 'react-json-view';
 import MongoQueryViewer from '../components/MongoQueryViewer';
 
+import api from './api';
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://localhost:7073/api';
+
 const PAGE_SIZE = 10;
 
 const QueryProfiler = () => {
@@ -155,7 +156,7 @@ const QueryProfiler = () => {
 
     const checkProfilingStatus = async (connectionId) => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/QueryProfiler/profiling-status/${connectionId}`);
+            const response = await api.get(`/QueryProfiler/profiling-status/${connectionId}`);
             setIsProfiling(response.data);
         } catch (error) {
             handleError('Error checking profiling status', error);
@@ -167,7 +168,7 @@ const QueryProfiler = () => {
     const fetchConnections = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/MongoConnection`);
+            const response = await api.get(`/MongoConnection`);
             setConnections(Array.isArray(response.data) ? response.data : response.data.items || []);
         } catch (error) {
             handleError('Error loading connections', error);
@@ -182,7 +183,7 @@ const QueryProfiler = () => {
     const fetchProfiledQueries = useCallback(async (connectionId) => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/QueryProfiler/profiled-queries/${connectionId}`);
+            const response = await api.get(`/QueryProfiler/profiled-queries/${connectionId}`);
             const items = Array.isArray(response.data.items) ? response.data.items : [];
             setAllQueries(prev => [...items, ...prev]);
         } catch (error) {
@@ -199,7 +200,7 @@ const QueryProfiler = () => {
 
     const handleStartProfiling = async () => {
         try {
-            await axios.post(`${API_BASE_URL}/QueryProfiler/start-profiling/${selectedConnection}`);
+            await api.post(`/QueryProfiler/start-profiling/${selectedConnection}`);
             setIsProfiling(true);
             handleSuccess('Profiling started');
             setAllQueries([]);
@@ -217,7 +218,7 @@ const QueryProfiler = () => {
 
     const handleStopProfiling = async () => {
         try {
-            await axios.post(`${API_BASE_URL}/QueryProfiler/stop-profiling/${selectedConnection}`);
+            await api.post(`/QueryProfiler/stop-profiling/${selectedConnection}`);
             setIsProfiling(false);
             handleSuccess('Profiling stopped');
         } catch (error) {
@@ -249,7 +250,7 @@ const QueryProfiler = () => {
         setIsSuggestingIndexes(true);
         setSelectedQuery(query);
         try {
-            const response = await axios.post(`${API_BASE_URL}/QueryProfiler/suggest-indexes`, {
+            const response = await api.post(`/QueryProfiler/suggest-indexes`, {
                 query: query.queryShape
             });
             setSuggestedIndexes(response.data);
@@ -263,7 +264,7 @@ const QueryProfiler = () => {
     const handleCreateIndex = async (indexDefinition, idx) => {
         setCreatingIndex(idx);
         try {
-            const response = await axios.post(`${API_BASE_URL}/QueryProfiler/create-index`, {
+            const response = await api.post(`/QueryProfiler/create-index`, {
                 connectionId: selectedConnection,
                 collection: indexDefinition.collectionName,
                 pipeline: JSON.stringify(indexDefinition.index),

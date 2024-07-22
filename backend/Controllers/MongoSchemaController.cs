@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Driver;
@@ -11,6 +12,7 @@ using System.Linq;
 using System.Xml;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class MongoSchemaController : ControllerBase

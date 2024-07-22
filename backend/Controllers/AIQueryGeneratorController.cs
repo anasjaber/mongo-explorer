@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
@@ -13,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ThirdParty.Json.LitJson;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class AIQueryGeneratorController : ControllerBase

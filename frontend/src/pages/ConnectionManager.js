@@ -33,11 +33,11 @@ import {
     useDisclosure,
     useToast,
 } from '@chakra-ui/react';
-import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import ReactJson from 'react-json-view';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://localhost:7073/api';
+import api from './api';
+
 
 const ConnectionManager = () => {
     const [connections, setConnections] = useState([]);
@@ -59,7 +59,7 @@ const ConnectionManager = () => {
     const fetchConnections = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/MongoConnection`);
+            const response = await api.get(`/MongoConnection`);
             setConnections(Array.isArray(response.data) ? response.data : response.data.items || []);
         } catch (error) {
             handleError('Error fetching connections', error);
@@ -85,11 +85,11 @@ const ConnectionManager = () => {
         setIsLoading(true);
         try {
             if (editingConnection) {
-                await axios.put(`${API_BASE_URL}/MongoConnection/${editingConnection.id}`, editingConnection);
+                await api.put(`/MongoConnection/${editingConnection.id}`, editingConnection);
                 handleSuccess('Connection updated', 'The connection has been updated successfully.');
                 setEditingConnection(null);
             } else {
-                await axios.post(`${API_BASE_URL}/MongoConnection`, newConnection);
+                await api.post(`/MongoConnection`, newConnection);
                 handleSuccess('Connection added', 'New connection has been added successfully.');
                 setNewConnection({ name: '', connectionString: '', databaseName: '' });
             }
@@ -113,7 +113,7 @@ const ConnectionManager = () => {
     const handleDelete = async (id) => {
         setIsLoading(true);
         try {
-            await axios.delete(`${API_BASE_URL}/MongoConnection/${id}`);
+            await api.delete(`/MongoConnection/${id}`);
             handleSuccess('Connection deleted', 'The connection has been removed.');
             fetchConnections();
         } catch (error) {
@@ -132,7 +132,7 @@ const ConnectionManager = () => {
         setTestingConnection(connection);
         onOpenTestModal();
         try {
-            await axios.post(`${API_BASE_URL}/MongoConnection/test`, connection);
+            await api.post(`/MongoConnection/test`, connection);
             handleSuccess('Connection test successful', 'The connection is working correctly.');
         } catch (error) {
             handleError('Connection test failed', error);
@@ -145,7 +145,7 @@ const ConnectionManager = () => {
     const handleFetchSchema = async (connectionId) => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/MongoSchema/${connectionId}`);
+            const response = await api.get(`/MongoSchema/${connectionId}`);
             setSchema(JSON.parse(response.data.formattedSchema));
             onOpenSchemaModal();
         } catch (error) {

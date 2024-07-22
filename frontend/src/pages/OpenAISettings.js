@@ -13,10 +13,9 @@ import {
     useColorModeValue,
     useToast,
 } from '@chakra-ui/react';
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://localhost:7073/api';
+import api from './api';
 
 const OpenAISettings = () => {
     const [settings, setSettings] = useState({ apiKey: '', model: '' });
@@ -35,7 +34,7 @@ const OpenAISettings = () => {
     const fetchSettings = async () => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/OpenAISettings`);
+            const response = await api.get(`/OpenAISettings`);
             setSettings(response.data);
         } catch (error) {
             handleError('Error fetching settings', error);
@@ -52,7 +51,7 @@ const OpenAISettings = () => {
         e.preventDefault();
         setIsSaving(true);
         try {
-            await axios.put(`${API_BASE_URL}/OpenAISettings`, settings);
+            await api.put(`/OpenAISettings`, settings);
             handleSuccess('Settings updated', 'OpenAI settings have been successfully updated.');
             setIsEditing(false);
         } catch (error) {

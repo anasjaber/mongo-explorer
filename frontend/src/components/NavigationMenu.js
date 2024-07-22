@@ -1,7 +1,7 @@
 import { InfoIcon, LinkIcon, SearchIcon, SettingsIcon, StarIcon, TimeIcon } from '@chakra-ui/icons';
-import { Link as ChakraLink, Flex, Heading, VStack, useColorMode, useColorModeValue } from '@chakra-ui/react';
+import { Button, Link as ChakraLink, Flex, Heading, VStack, useColorMode, useColorModeValue } from '@chakra-ui/react';
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const NavigationMenu = () => {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -9,6 +9,12 @@ const NavigationMenu = () => {
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const activeBg = useColorModeValue('gray.100', 'gray.700');
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('mongo-token');
+    navigate('/login');
+  };
 
   const navItems = [
     { path: '/', label: 'Connections', icon: LinkIcon },
@@ -29,27 +35,33 @@ const NavigationMenu = () => {
       borderColor={borderColor}
       spacing={4}
       align="stretch"
+      justify="space-between"
     >
-      <Flex justify="space-between" align="center">
-        <Heading size="md">MongoDB Manager</Heading>
-      </Flex>
-      {navItems.map((item) => (
-        <ChakraLink
-          key={item.path}
-          as={Link}
-          to={item.path}
-          py={2}
-          px={4}
-          borderRadius="md"
-          display="flex"
-          alignItems="center"
-          bg={location.pathname === item.path ? activeBg : 'transparent'}
-          _hover={{ textDecoration: 'none', bg: activeBg }}
-        >
-          <item.icon mr={3} />
-          {item.label}
-        </ChakraLink>
-      ))}
+      <VStack align="stretch" spacing={4}>
+        <Flex justify="space-between" align="center">
+          <Heading size="md">MongoDB Manager</Heading>
+        </Flex>
+        {navItems.map((item) => (
+          <ChakraLink
+            key={item.path}
+            as={Link}
+            to={item.path}
+            py={2}
+            px={4}
+            borderRadius="md"
+            display="flex"
+            alignItems="center"
+            bg={location.pathname === item.path ? activeBg : 'transparent'}
+            _hover={{ textDecoration: 'none', bg: activeBg }}
+          >
+            <item.icon mr={3} />
+            {item.label}
+          </ChakraLink>
+        ))}
+      </VStack>
+      <Button onClick={handleLogout} colorScheme="red" width="full">
+        Logout
+      </Button>
     </VStack>
   );
 };

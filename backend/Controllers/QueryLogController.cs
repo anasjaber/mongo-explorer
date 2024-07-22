@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver.Linq;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class QueryLogController : ControllerBase
@@ -18,6 +22,7 @@ public class QueryLogController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<QueryLog>> AddQueryLog(QueryLogDto logDto)
     {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
         var query = await _context.Queries.FindAsync(logDto.QueryId);
         if (query == null)
         {
@@ -30,7 +35,8 @@ public class QueryLogController : ControllerBase
             RunBy = logDto.RunBy,
             Duration = logDto.Duration,
             QueryText = logDto.QueryText,
-            QueryId = logDto.QueryId
+            QueryId = logDto.QueryId,
+            UserId = userId
         };
 
         _context.QueryLogs.Add(queryLog);
@@ -56,7 +62,8 @@ public class QueryLogController : ControllerBase
     public async Task<ActionResult<PaginatedResult<QueryLogDto>>> ListQueryLogs([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string filter = "")
     {
         var queryLogs = _context.QueryLogs.AsQueryable();
-
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        queryLogs = queryLogs.Where(q => q.UserId == userId);
         if (!string.IsNullOrEmpty(filter))
         {
             queryLogs = queryLogs.Where(l =>
@@ -65,7 +72,7 @@ public class QueryLogController : ControllerBase
                 l.Query.Title.Contains(filter)); // Filter by the query title
         }
 
-        var totalLogs = await queryLogs.CountAsync();
+        var totalLogs = await queryLogs.CountAsync(x=>x.UserId == userId);
         var totalPages = (int)Math.Ceiling(totalLogs / (double)pageSize);
 
         var logs = await queryLogs
@@ -117,6 +124,7 @@ public class QueryLogDto
 public class QueryLog
 {
     public int Id { get; set; }
+    public int UserId { get; set; }
     public DateTime RunAt { get; set; }
     public string RunBy { get; set; }
     public TimeSpan Duration { get; set; }
