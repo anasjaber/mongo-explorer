@@ -55,7 +55,7 @@ To run Mongo Explorer on your local machine, follow these steps:
 
 3. Start the application using Docker Compose:
    ```
-   docker-compose up --build
+   docker-compose up --build -d
    ```
 
 4. Once the containers are up and running, you can access the application:
