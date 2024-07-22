@@ -43,22 +43,12 @@ To run Mongo Explorer on your local machine, follow these steps:
    cd mongo-explorer
    ```
 
-2. Set up environment variables:
-   - Open the `docker-compose.yml` file
-   - Find the `backend` service section
-   - Add or modify the following environment variables:
-     ```yaml
-     environment:
-       - OPENAI_KEY=your_openai_api_key_here
-       - OPENAI_MODEL=gpt-4o  # or your preferred model
-     ```
-
-3. Start the application using Docker Compose:
+2. Start the application using Docker Compose:
    ```
    docker-compose up --build -d
    ```
 
-4. Once the containers are up and running, you can access the application:
+3. Once the containers are up and running, you can access the application:
    - 🖥️ Frontend: http://localhost:7072
    - ⚙️ Backend API: http://localhost:7073/docs
 
