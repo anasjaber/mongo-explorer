@@ -8,8 +8,6 @@ services:
     environment:
       - ASPNETCORE_URLS=http://+:7073
       - ALLOWED_ORIGINS=http://localhost:7072
-      - OPENAI_KEY=
-      - OPENAI_MODEL=gpt-4o
       - USE_HTTPS=false
       - ConnectionStrings__DefaultConnection=Data Source=/app/data/MongoConnectionManager.db
     volumes:
