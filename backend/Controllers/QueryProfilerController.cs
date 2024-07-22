@@ -213,10 +213,17 @@ public class QueryProfilerController : ControllerBase
             return BadRequest("Query is required.");
         }
 
+        var settings = await _context.OpenAISettings.FirstOrDefaultAsync();
+
+        if (settings == null || string.IsNullOrEmpty(settings.ApiKey) || string.IsNullOrEmpty(settings.Model))
+        {
+            return StatusCode(500, "OpenAI API key is not configured.");
+        }
+
         var chatMessages = GenerateChatMessages(request.Query);
         var chatRequest = new ChatRequest()
         {
-            Model = Environment.GetEnvironmentVariable("OPENAI_MODEL"),
+            Model = settings.Model,
             Messages = chatMessages,
             Temperature = 0.7,
             MaxTokens = 800,
@@ -224,7 +231,7 @@ public class QueryProfilerController : ControllerBase
             FrequencyPenalty = 0,
             PresencePenalty = 0
         };
-        var openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_KEY");
+        var openAiApiKey = settings.ApiKey;
         var openAi = new OpenAIAPI(openAiApiKey);
         var chatResult = await openAi.Chat.CreateChatCompletionAsync(chatRequest);
 
@@ -256,11 +263,18 @@ public class QueryProfilerController : ControllerBase
         {
             return NotFound();
         }
+        var settings = await _context.OpenAISettings.FirstOrDefaultAsync();
+
+        if (settings == null || string.IsNullOrEmpty(settings.ApiKey) || string.IsNullOrEmpty(settings.Model))
+        {
+            return StatusCode(500, "OpenAI API key is not configured.");
+        }
+
         string queryText = $"db.getCollection(\"{log.Query.CollectionName}\").aggregate([{log.QueryText}])";
         var chatMessages = GenerateChatMessages(log.QueryText);
         var chatRequest = new ChatRequest()
         {
-            Model = Environment.GetEnvironmentVariable("OPENAI_MODEL"),
+            Model = settings.Model,
             Messages = chatMessages,
             Temperature = 0.7,
             MaxTokens = 800,
@@ -269,7 +283,7 @@ public class QueryProfilerController : ControllerBase
             PresencePenalty = 0
         };
 
-        var openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_KEY");
+        var openAiApiKey = settings.ApiKey;
         var openAi = new OpenAIAPI(openAiApiKey);
         var chatResult = await openAi.Chat.CreateChatCompletionAsync(chatRequest);
 

@@ -27,13 +27,14 @@ public class AIQueryGeneratorController : ControllerBase
     [HttpPost("generate")]
     public async Task<ActionResult<string>> GenerateQuery([FromBody] QueryGenerationRequest request)
     {
-        var openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_KEY");
-        if (string.IsNullOrEmpty(openAiApiKey))
+        var settings = await _context.OpenAISettings.FirstOrDefaultAsync();
+
+        if (settings == null || string.IsNullOrEmpty(settings.ApiKey) || string.IsNullOrEmpty(settings.Model))
         {
             return StatusCode(500, "OpenAI API key is not configured.");
         }
 
-        var openAi = new OpenAIAPI(openAiApiKey);
+        var openAi = new OpenAIAPI(settings.ApiKey);
 
         var connection = await _context.MongoConnections.FindAsync(request.ConnectionId);
         if (connection == null)
@@ -49,7 +50,7 @@ public class AIQueryGeneratorController : ControllerBase
         {
             var chatRequest = new ChatRequest()
             {
-                Model = Environment.GetEnvironmentVariable("OPENAI_MODEL"),
+                Model = settings.Model,
                 Messages = chatMessages,
                 Temperature = 0.7,
                 MaxTokens = 800,

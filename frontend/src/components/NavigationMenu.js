@@ -1,4 +1,4 @@
-import { InfoIcon, SearchIcon, SettingsIcon, StarIcon, TimeIcon } from '@chakra-ui/icons';
+import { InfoIcon, LinkIcon, SearchIcon, SettingsIcon, StarIcon, TimeIcon } from '@chakra-ui/icons';
 import { Link as ChakraLink, Flex, Heading, VStack, useColorMode, useColorModeValue } from '@chakra-ui/react';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -11,11 +11,12 @@ const NavigationMenu = () => {
   const location = useLocation();
 
   const navItems = [
-    { path: '/', label: 'Connections', icon: SettingsIcon },
+    { path: '/', label: 'Connections', icon: LinkIcon },
     { path: '/queries', label: 'Queries', icon: SearchIcon },
     { path: '/ai-query-generator', label: 'AI Query Generator', icon: StarIcon },
     { path: '/query-logs', label: 'Query Logs', icon: TimeIcon },
     { path: '/query-profiler', label: 'Query Profiler', icon: InfoIcon },
+    { path: '/openai-settings', label: 'OpenAI Settings', icon: SettingsIcon }
   ];
 
   return (

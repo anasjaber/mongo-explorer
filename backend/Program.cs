@@ -27,7 +27,7 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddSignalR();
 
-string allowedOriginsEnv = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS") ?? "http://localhost:7072";
+string allowedOriginsEnv = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS") ?? "http://localhost:3000";
 string[] allowedOrigins = allowedOriginsEnv.Split(',');
 
 builder.Services.AddCors(options =>
@@ -89,6 +89,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Query> Queries { get; set; }
     public DbSet<QueryLog> QueryLogs { get; set; }
     public DbSet<ProfiledQuery> ProfiledQueries { get; set; }
+    public DbSet<OpenAISettings> OpenAISettings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -97,5 +98,9 @@ public class ApplicationDbContext : DbContext
                     .HasOne(ql => ql.Query)
                     .WithMany(q => q.QueryLogs)
                     .HasForeignKey(ql => ql.QueryId);
+
+        modelBuilder.Entity<OpenAISettings>().HasData(
+            new OpenAISettings { Id = 1, ApiKey = "", Model = "" }
+        );
     }
 }

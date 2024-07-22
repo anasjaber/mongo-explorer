@@ -8,6 +8,7 @@ const ConnectionManager = lazy(() => import('./pages/ConnectionManager'));
 const QueryLogs = lazy(() => import('./pages/QueryLogs'));
 const QueryManager = lazy(() => import('./pages/QueryManager'));
 const QueryProfiler = lazy(() => import('./pages/QueryProfiler'));
+const OpenAISettings = lazy(() => import('./pages/OpenAISettings'));
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
                 <Route path="/ai-query-generator" element={<AIQueryGenerator />} />
                 <Route path="/query-logs" element={<QueryLogs />} />
                 <Route path="/query-profiler" element={<QueryProfiler />} />
+                <Route path="/openai-settings" element={<OpenAISettings />} />
               </Routes>
             </Suspense>
           </Box>
