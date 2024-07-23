@@ -11,6 +11,7 @@ using OpenAI_API.Completions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ThirdParty.Json.LitJson;
 
@@ -29,8 +30,9 @@ public class AIQueryGeneratorController : ControllerBase
     [HttpPost("generate")]
     public async Task<ActionResult<string>> GenerateQuery([FromBody] QueryGenerationRequest request)
     {
-        var settings = await _context.OpenAISettings.FirstOrDefaultAsync();
-
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var settings = await _context.OpenAISettings.FirstOrDefaultAsync(x=>x.UserId == userId);
+        
         if (settings == null || string.IsNullOrEmpty(settings.ApiKey) || string.IsNullOrEmpty(settings.Model))
         {
             return StatusCode(500, "OpenAI API key is not configured.");

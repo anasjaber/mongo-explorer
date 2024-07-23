@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 [Authorize]
 [ApiController]
@@ -215,7 +216,8 @@ public class QueryProfilerController : ControllerBase
             return BadRequest("Query is required.");
         }
 
-        var settings = await _context.OpenAISettings.FirstOrDefaultAsync();
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var settings = await _context.OpenAISettings.FirstOrDefaultAsync(x => x.UserId == userId);
 
         if (settings == null || string.IsNullOrEmpty(settings.ApiKey) || string.IsNullOrEmpty(settings.Model))
         {
@@ -265,7 +267,8 @@ public class QueryProfilerController : ControllerBase
         {
             return NotFound();
         }
-        var settings = await _context.OpenAISettings.FirstOrDefaultAsync();
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var settings = await _context.OpenAISettings.FirstOrDefaultAsync(x => x.UserId == userId);
 
         if (settings == null || string.IsNullOrEmpty(settings.ApiKey) || string.IsNullOrEmpty(settings.Model))
         {
