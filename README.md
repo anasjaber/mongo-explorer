@@ -45,7 +45,7 @@ To run Mongo Explorer on your local machine, follow these steps:
 
 2. Start the application using Docker Compose:
    ```
-   docker-compose up --build -d
+   docker-compose up --build
    ```
 
 3. Once the containers are up and running, you can access the application:
@@ -53,6 +53,30 @@ To run Mongo Explorer on your local machine, follow these steps:
    - ⚙️ Backend API: http://localhost:7073/docs
 
 That's it! 🎈 With just these simple steps, you'll have the entire Mongo Explorer application up and running, ready to connect to your MongoDB instances and start exploring.
+
+## 📸 Screenshots
+
+Here are some screenshots of the Mongo Explorer application to give you a glimpse of its features:
+
+### Suggested Indexes for Query
+![Suggested Indexes for Query](path/to/suggested-indexes.png)
+Mongo Explorer provides AI-powered index suggestions to optimize your queries. You can create these indexes with just one click.
+
+### AI Query Generator
+![AI Query Generator](path/to/ai-query-generator.png)
+The AI Query Generator allows you to create MongoDB queries using natural language. Simply describe what you want to query, and the AI will generate the appropriate MongoDB query for you.
+
+### Edit Query
+![Edit Query](path/to/edit-query.png)
+Easily edit your MongoDB queries with a user-friendly interface. You can update query details, modify the query text, and even generate new queries using AI assistance.
+
+### OpenAI Settings
+![OpenAI Settings](path/to/openai-settings.png)
+Configure your OpenAI settings to enable AI-powered features. Set your API key and choose the AI model that best suits your needs.
+
+### Connection Manager
+![Connection Manager](path/to/connection-manager.png)
+Manage your MongoDB connections with ease. Add new connections, edit existing ones, test connections, view schemas, and delete connections as needed.
 
 ## ⚙️ Configuration
 

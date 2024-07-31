@@ -1,5 +1,5 @@
 import { InfoIcon, LinkIcon, SearchIcon, SettingsIcon, StarIcon, TimeIcon } from '@chakra-ui/icons';
-import { Button, Link as ChakraLink, Flex, Heading, VStack, useColorMode, useColorModeValue } from '@chakra-ui/react';
+import { Button, Link as ChakraLink, Flex, Image, VStack, useColorMode, useColorModeValue } from '@chakra-ui/react';
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -38,8 +38,14 @@ const NavigationMenu = () => {
       justify="space-between"
     >
       <VStack align="stretch" spacing={4}>
-        <Flex justify="space-between" align="center">
-          <Heading size="md">MongoDB Manager</Heading>
+        <Flex justify="center" align="center" mb={2}>
+          <Image
+            src="/logo.png"
+            alt="Mongo Explorer Logo"
+            height="50px"
+            width="auto"
+            objectFit="contain"
+          />
         </Flex>
         {navItems.map((item) => (
           <ChakraLink
