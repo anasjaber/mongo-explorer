@@ -33,6 +33,42 @@ Before running this application, make sure you have the following installed:
 - 🐳 Docker
 - 🐙 Docker Compose
 
+## 📸 Screenshots
+
+Here are some screenshots of the Mongo Explorer application to give you a glimpse of its features:
+
+### Connection Manager
+![Connection Manager](https://github.com/anasjaber/mongo-explorer/blob/main/screenshots/connection-manager.png)
+Manage your MongoDB connections with ease. Add new connections, edit existing ones, test connections, view schemas, and delete connections as needed.
+
+### Queries
+![Queries Management](https://github.com/anasjaber/mongo-explorer/blob/main/screenshots/queries.png)
+The Add New Query interface provides a user-friendly way to create, save, and manage your MongoDB queries. You can also generate queries using AI assistance/Execute queries/Display schemas.
+
+### Edit Query
+![Edit Query](https://github.com/anasjaber/mongo-explorer/blob/main/screenshots/edit-query.png)
+Easily edit your MongoDB queries with a user-friendly interface. You can update query details, modify the query text, and even generate new queries using AI assistance.
+
+### AI Query Generator
+![AI Query Generator](https://github.com/anasjaber/mongo-explorer/blob/main/screenshots/ai-query-generator.png)
+The AI Query Generator allows you to create MongoDB queries using natural language. Simply describe what you want to query, and the AI will generate the appropriate MongoDB query for you.
+
+### Query Logs
+![Query Logs](https://github.com/anasjaber/mongo-explorer/blob/main/screenshots/query-logs.png)
+The Query Logs feature keeps track of all the queries you've run, allowing you to easily review and reuse your previous work.
+
+### Query Profiler
+![Query Profiler](https://github.com/anasjaber/mongo-explorer/blob/main/screenshots/query-profiler.png)
+The Query Profiler helps you analyze and optimize your MongoDB queries. It provides detailed information about query execution time and allows you to identify performance bottlenecks.
+
+### Suggested Indexes for Query
+![Suggested Indexes for Query](https://github.com/anasjaber/mongo-explorer/blob/main/screenshots/suggested-indexes.png)
+Mongo Explorer provides AI-powered index suggestions to optimize your queries. You can create these indexes with just one click.
+
+### OpenAI Settings
+![OpenAI Settings](https://github.com/anasjaber/mongo-explorer/blob/main/screenshots/openai-settings.png)
+Configure your OpenAI settings to enable AI-powered features. Set your API key and choose the AI model that best suits your needs.
+
 ## 🚀 Getting Started
 
 To run Mongo Explorer on your local machine, follow these steps:
@@ -53,30 +89,6 @@ To run Mongo Explorer on your local machine, follow these steps:
    - ⚙️ Backend API: http://localhost:7073/docs
 
 That's it! 🎈 With just these simple steps, you'll have the entire Mongo Explorer application up and running, ready to connect to your MongoDB instances and start exploring.
-
-## 📸 Screenshots
-
-Here are some screenshots of the Mongo Explorer application to give you a glimpse of its features:
-
-### Suggested Indexes for Query
-![Suggested Indexes for Query](path/to/suggested-indexes.png)
-Mongo Explorer provides AI-powered index suggestions to optimize your queries. You can create these indexes with just one click.
-
-### AI Query Generator
-![AI Query Generator](path/to/ai-query-generator.png)
-The AI Query Generator allows you to create MongoDB queries using natural language. Simply describe what you want to query, and the AI will generate the appropriate MongoDB query for you.
-
-### Edit Query
-![Edit Query](path/to/edit-query.png)
-Easily edit your MongoDB queries with a user-friendly interface. You can update query details, modify the query text, and even generate new queries using AI assistance.
-
-### OpenAI Settings
-![OpenAI Settings](path/to/openai-settings.png)
-Configure your OpenAI settings to enable AI-powered features. Set your API key and choose the AI model that best suits your needs.
-
-### Connection Manager
-![Connection Manager](path/to/connection-manager.png)
-Manage your MongoDB connections with ease. Add new connections, edit existing ones, test connections, view schemas, and delete connections as needed.
 
 ## ⚙️ Configuration
 
