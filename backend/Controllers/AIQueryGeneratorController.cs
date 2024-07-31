@@ -68,7 +68,7 @@ public class AIQueryGeneratorController : ControllerBase
             if (chatResult.Choices.Count > 0)
             {
                 var generatedQuery = chatResult.Choices[0].Message.Content.Trim();
-                generatedQuery = ExtractQueryFromCodeBlock(generatedQuery);
+                generatedQuery = ExtractQueryFromJavascriptBlock(generatedQuery);
                 return Ok(generatedQuery);
             }
             else
@@ -86,7 +86,7 @@ public class AIQueryGeneratorController : ControllerBase
     {
         var messages = new List<ChatMessage>
         {
-            new ChatMessage(ChatMessageRole.System, "You are an AI assistant that generates MongoDB queries. Your task is to create a MongoDB aggregation pipeline based on the given information and user's query."),
+            new ChatMessage(ChatMessageRole.System, "You are an AI assistant that generates MongoDB queries. Your task is to create a MongoDB query using aggregation pipeline based on the given information and user's query."),
             new ChatMessage(ChatMessageRole.User, $@"
 I need a MongoDB query for the following scenario:
 
@@ -97,8 +97,8 @@ Schemas:
 
 User's Query: {request.NaturalLanguageQuery}
 
-Please generate a MongoDB aggregation pipeline that answers the user's query. 
-The query should be in the form of a JSON array of pipeline stages. 
+Please generate a MongoDB query using aggregation pipeline that answers the user's query. 
+The query should be in the form of mongo shell query with pipeline stages array. 
 Use the $lookup stage to join collections if necessary. 
 Make sure to handle potential errors and edge cases.
 Provide only the query without any additional explanation."),
@@ -110,6 +110,22 @@ Provide only the query without any additional explanation."),
     private string ExtractQueryFromCodeBlock(string content)
     {
         var startMarker = "```json";
+        var endMarker = "```";
+        var startIndex = content.IndexOf(startMarker);
+        var endIndex = content.LastIndexOf(endMarker);
+
+        if (startIndex != -1 && endIndex != -1 && startIndex < endIndex)
+        {
+            startIndex += startMarker.Length;
+            return content.Substring(startIndex, endIndex - startIndex).Trim();
+        }
+
+        return content;
+    }
+
+    private string ExtractQueryFromJavascriptBlock(string content)
+    {
+        var startMarker = "```javascript";
         var endMarker = "```";
         var startIndex = content.IndexOf(startMarker);
         var endIndex = content.LastIndexOf(endMarker);

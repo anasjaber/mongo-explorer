@@ -251,7 +251,7 @@ const QueryManager = () => {
     const handleAIGeneratorClose = (generatedQueryText) => {
         onCloseAIGenerator();
         if (generatedQueryText) {
-            setCurrentQuery(prev => ({ ...prev, queryText: JSON.stringify(generatedQueryText) }));
+            setCurrentQuery(prev => ({ ...prev, queryText: generatedQueryText }));
         }
     };
 
@@ -350,7 +350,7 @@ const QueryManager = () => {
                     </FormControl>
                     <FormControl isRequired>
                         <FormLabel>Query Text</FormLabel>
-                        <Textarea name="queryText" value={currentQuery.queryText} onChange={handleInputChange} />
+                        <Textarea name="queryText" value={currentQuery.queryText} onChange={handleInputChange} h="50vh" />
                     </FormControl>
                     <HStack spacing={4}>
                         <Button type="submit" colorScheme="blue" isLoading={isLoading} leftIcon={isEditing ? <EditIcon /> : <AddIcon />}>

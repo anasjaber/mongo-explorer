@@ -25,8 +25,8 @@ import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import { FaMagic, FaWpforms } from 'react-icons/fa';
 import ReactJson from 'react-json-view';
+import MongoQueryViewer from '../components/MongoQueryViewer';
 import api from './api';
-
 const AIQueryGenerator = ({ onClose, isDialog }) => {
   const [connections, setConnections] = useState([]);
   const [selectedConnection, setSelectedConnection] = useState(null);
@@ -230,24 +230,12 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
           <Heading size="md" mb={4}>Generated Query</Heading>
           <Box bg={bgColor} p={5} borderRadius="md" borderWidth={1} borderColor={borderColor}>
             <Box p={4} borderRadius="md" whiteSpace="pre-wrap" overflow="auto">
-              {typeof generatedQuery === 'object' ? (
-                <ReactJson
-                  src={generatedQuery}
-                  theme="rjv-default"
-                  collapseStringsAfterLength={100}
-                  style={{ padding: "20px", backgroundColor: "#fff" }}
-                  displayDataTypes={false}
-                  displayObjectSize={false}
-                  collapsed={false}
-                  enableClipboard={(copy) => {
-                    let copyText = JSON.stringify(copy.src, null, 2);
-                    navigator.clipboard.writeText(copyText);
-                    return true;
-                  }}
-                />
-              ) : (
-                <Text as="pre">{JSON.stringify(generatedQuery, null, 2)}</Text>
-              )}
+
+              <Box bg={bgColor} p={5} borderRadius="md" borderWidth={1} borderColor={borderColor}>
+                <MongoQueryViewer query={generatedQuery} />
+              </Box>
+
+
             </Box>
           </Box>
         </Box>

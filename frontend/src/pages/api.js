@@ -8,7 +8,6 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
     (config) => {
-        debugger;
         const token = localStorage.getItem('mongo-token');
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
@@ -22,7 +21,6 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        debugger;
         if (error.response && error.response.status === 401) {
             // Handle unauthorized access (e.g., redirect to login)
             localStorage.removeItem('mongo-token');

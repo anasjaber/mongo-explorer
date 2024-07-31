@@ -150,16 +150,6 @@ public class QueryController : ControllerBase
             return NotFound("Query not found");
         }
 
-        // Validate the query text is a valid JSON array
-        try
-        {
-            JArray.Parse(queryDto.QueryText);
-        }
-        catch (JsonException)
-        {
-            return BadRequest("Invalid query text. Must be a valid JSON array.");
-        }
-
         query.Title = queryDto.Title;
         query.Description = queryDto.Description;
         query.QueryText = queryDto.QueryText;
@@ -378,15 +368,16 @@ public class QueryController : ControllerBase
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            // Convert the query string to a BsonArray
-            var bsonArray = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonArray>(query.QueryText);
+            // Extract the JSON array part of the aggregation pipeline
+            var startIndex = query.QueryText.IndexOf('[');
+            var endIndex = query.QueryText.LastIndexOf(']') + 1;
+            var jsonArrayString = query.QueryText.Substring(startIndex, endIndex - startIndex);
+
+            // Convert the JSON array string to a BsonArray
+            var bsonArray = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonArray>(jsonArrayString);
 
             // Convert BsonArray to IEnumerable<BsonDocument>
-            var documents = new List<BsonDocument>();
-            foreach (var item in bsonArray)
-            {
-                documents.Add(item.AsBsonDocument);
-            }
+            var documents = bsonArray.Select(bsonElement => bsonElement.AsBsonDocument).ToList();
 
             // Create a PipelineDefinition from the documents
             var pipeline = PipelineDefinition<BsonDocument, BsonDocument>.Create(documents);
@@ -404,7 +395,7 @@ public class QueryController : ControllerBase
                 RunBy = User.Identity.Name ?? "Anonymous", // Assuming you have authentication set up
                 Duration = stopwatch.Elapsed,
                 QueryText = query.QueryText,
-                UserId=userId
+                UserId = userId
             };
 
             _context.QueryLogs.Add(queryLog);
@@ -423,10 +414,12 @@ public class QueryController : ControllerBase
 
     private Dictionary<string, object> BsonDocumentToDictionary(BsonDocument document)
     {
-        return document.ToDictionary(
-            element => element.Name,
-            element => BsonValueToObject(element.Value)
-        );
+        var dictionary = new Dictionary<string, object>();
+        foreach (var element in document.Elements)
+        {
+            dictionary[element.Name] = BsonTypeMapper.MapToDotNetValue(element.Value);
+        }
+        return dictionary;
     }
 
     private object BsonValueToObject(BsonValue value)

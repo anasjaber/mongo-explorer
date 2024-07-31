@@ -34,7 +34,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { FaMagic } from 'react-icons/fa';
 import ReactJson from 'react-json-view';
 import { useNavigate } from 'react-router-dom';
-
+import MongoQueryViewer from '../components/MongoQueryViewer';
 import api from './api';
 
 const QueryLogs = () => {
@@ -178,7 +178,7 @@ const QueryLogs = () => {
                         cursor="pointer"
                         textDecoration="underline"
                         onClick={() => {
-                          setSelectedQuery(JSON.parse(log.queryText));
+                          setSelectedQuery(log.queryText);
                           onOpenQueryModal();
                         }}
                       >
@@ -237,19 +237,7 @@ const QueryLogs = () => {
           <ModalCloseButton />
           <ModalBody>
             <Box bg={bgColor} p={5} borderRadius="md" borderWidth={1} borderColor={borderColor}>
-              <ReactJson
-                src={selectedQuery}
-                theme="rjv-default"
-                collapsed={1}
-                collapseStringsAfterLength={50}
-                enableClipboard={(copy) => {
-                  let copyText = JSON.stringify(copy.src, null, 2);
-                  navigator.clipboard.writeText(copyText);
-                  return true;
-                }}
-                displayDataTypes={false}
-                displayObjectSize={false}
-              />
+              <MongoQueryViewer query={selectedQuery} />
             </Box>
           </ModalBody>
           <ModalFooter>
