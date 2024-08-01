@@ -2,6 +2,10 @@
 
 Mongo Explorer is a comprehensive web-based application for exploring, managing, and optimizing MongoDB databases. It provides a powerful and user-friendly interface for performing a wide range of MongoDB operations, from basic querying to advanced performance optimization.
 
+## Live Demo
+
+https://mongo-explorer.onrender.com/
+
 ## ✨ Features
 
 - 🔌 Connect to multiple MongoDB instances
@@ -81,7 +85,7 @@ To run Mongo Explorer on your local machine, follow these steps:
 
 2. Start the application using Docker Compose:
    ```
-   docker-compose up --build
+   docker-compose up -d --build
    ```
 
 3. Once the containers are up and running, you can access the application:
