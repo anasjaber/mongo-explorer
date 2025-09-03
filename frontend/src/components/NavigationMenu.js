@@ -5,8 +5,6 @@ import {
   SettingsIcon, 
   StarIcon, 
   TimeIcon,
-  MoonIcon,
-  SunIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ExternalLinkIcon
@@ -15,9 +13,7 @@ import {
   Button, 
   Link as ChakraLink, 
   Flex, 
-  Image, 
   VStack, 
-  useColorMode, 
   useColorModeValue,
   Box,
   Text,
@@ -40,7 +36,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FiLogOut, FiUser } from 'react-icons/fi';
 
 const NavigationMenu = () => {
-  const { colorMode, toggleColorMode } = useColorMode();
   const bgColor = useColorModeValue('gray.50', 'gray.900');
   const sidebarBg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -126,23 +121,14 @@ const NavigationMenu = () => {
         >
           {!isCollapsed ? (
             <>
-              <HStack spacing={3}>
-                <Image
-                  src="/logo.png"
-                  alt="Mongo Explorer"
-                  height="40px"
-                  width="auto"
-                  objectFit="contain"
-                />
-                <Box>
-                  <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                    Mongo Explorer
-                  </Text>
-                  <Text fontSize="xs" color={iconColor}>
-                    Database Manager
-                  </Text>
-                </Box>
-              </HStack>
+              <Box>
+                <Text fontSize="lg" fontWeight="bold" color={textColor}>
+                  Mongo Explorer
+                </Text>
+                <Text fontSize="xs" color={iconColor}>
+                  Database Manager
+                </Text>
+              </Box>
               <IconButton
                 icon={<ChevronLeftIcon />}
                 size="sm"
@@ -198,7 +184,7 @@ const NavigationMenu = () => {
                 alignItems="center"
                 justifyContent={isCollapsed ? 'center' : 'flex-start'}
                 py={3}
-                px={isCollapsed ? 2 : 4}
+                px={isCollapsed ? 0 : 4}
                 borderRadius="lg"
                 bg={isActive(item.path) ? activeBg : 'transparent'}
                 color={isActive(item.path) ? activeColor : textColor}
@@ -208,7 +194,7 @@ const NavigationMenu = () => {
                 _hover={{ 
                   textDecoration: 'none', 
                   bg: hoverBg,
-                  transform: 'translateX(2px)'
+                  transform: isCollapsed ? 'none' : 'translateX(2px)'
                 }}
                 role="group"
               >
@@ -224,7 +210,7 @@ const NavigationMenu = () => {
                     borderRadius="full"
                   />
                 )}
-                <Flex align="center" w="full">
+                <Flex align="center" justify={isCollapsed ? 'center' : 'flex-start'} w="full">
                   <Box
                     as={item.icon}
                     boxSize={5}
@@ -259,25 +245,6 @@ const NavigationMenu = () => {
 
         {/* Footer Actions */}
         <VStack spacing={3} align="stretch">
-          {/* Theme Toggle */}
-          <Tooltip label={`Switch to ${colorMode === 'light' ? 'dark' : 'light'} mode`} placement="right">
-            <IconButton
-              icon={colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
-              onClick={toggleColorMode}
-              variant="ghost"
-              size={isCollapsed ? 'sm' : 'md'}
-              aria-label="Toggle theme"
-              w={isCollapsed ? 'auto' : 'full'}
-              justifyContent={isCollapsed ? 'center' : 'flex-start'}
-            >
-              {!isCollapsed && (
-                <Text ml={3} fontSize="sm">
-                  {colorMode === 'light' ? 'Dark Mode' : 'Light Mode'}
-                </Text>
-              )}
-            </IconButton>
-          </Tooltip>
-
           {/* User Menu */}
           {!isCollapsed ? (
             <Menu>
