@@ -370,7 +370,7 @@ const ConnectionManager = () => {
                         <CardBody>
                             <VStack spacing={5}>
                                 <FormControl isRequired>
-                                    <FormLabel fontSize="sm" fontWeight="medium">
+                                    <FormLabel fontSize="sm" fontWeight="medium" display="inline-flex" alignItems="center">
                                         Connection Name
                                     </FormLabel>
                                     <InputGroup>
@@ -394,7 +394,7 @@ const ConnectionManager = () => {
                                 </FormControl>
 
                                 <FormControl isRequired>
-                                    <FormLabel fontSize="sm" fontWeight="medium">
+                                    <FormLabel fontSize="sm" fontWeight="medium" display="inline-flex" alignItems="center">
                                         Connection String
                                     </FormLabel>
                                     <Textarea
@@ -417,7 +417,7 @@ const ConnectionManager = () => {
                                 </FormControl>
 
                                 <FormControl isRequired>
-                                    <FormLabel fontSize="sm" fontWeight="medium">
+                                    <FormLabel fontSize="sm" fontWeight="medium" display="inline-flex" alignItems="center">
                                         Database Name
                                     </FormLabel>
                                     <InputGroup>

@@ -108,7 +108,7 @@ const Login = () => {
 
                     <VStack spacing={5} width="full">
                         <FormControl isRequired isInvalid={!!emailError}>
-                            <FormLabel fontSize="sm" fontWeight="medium">Email Address</FormLabel>
+                            <FormLabel fontSize="sm" fontWeight="medium" display="inline-flex" alignItems="center">Email Address</FormLabel>
                             <InputGroup>
                                 <InputLeftElement pointerEvents="none">
                                     <Icon as={EmailIcon} color="gray.400" />
@@ -128,7 +128,7 @@ const Login = () => {
                         </FormControl>
 
                         <FormControl isRequired>
-                            <FormLabel fontSize="sm" fontWeight="medium">Password</FormLabel>
+                            <FormLabel fontSize="sm" fontWeight="medium" display="inline-flex" alignItems="center">Password</FormLabel>
                             <InputGroup>
                                 <InputLeftElement pointerEvents="none">
                                     <Icon as={LockIcon} color="gray.400" />

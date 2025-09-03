@@ -557,7 +557,7 @@ const QueryManager = () => {
                             <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={5}>
                                 <GridItem colSpan={{ base: 1, md: 2 }}>
                                     <FormControl isRequired>
-                                        <FormLabel fontSize="sm" fontWeight="medium">
+                                        <FormLabel fontSize="sm" fontWeight="medium" display="inline-flex" alignItems="center">
                                             Query Title
                                         </FormLabel>
                                         <InputGroup>
@@ -582,7 +582,7 @@ const QueryManager = () => {
 
                                 <GridItem colSpan={{ base: 1, md: 2 }}>
                                     <FormControl isRequired>
-                                        <FormLabel fontSize="sm" fontWeight="medium">
+                                        <FormLabel fontSize="sm" fontWeight="medium" display="inline-flex" alignItems="center">
                                             Description
                                         </FormLabel>
                                         <InputGroup>
@@ -607,7 +607,7 @@ const QueryManager = () => {
 
                                 <GridItem>
                                     <FormControl isRequired>
-                                        <FormLabel fontSize="sm" fontWeight="medium">
+                                        <FormLabel fontSize="sm" fontWeight="medium" display="inline-flex" alignItems="center">
                                             <HStack spacing={1}>
                                                 <Icon as={FiDatabase} color={mutedColor} />
                                                 <Text>Connection</Text>
@@ -634,7 +634,7 @@ const QueryManager = () => {
 
                                 <GridItem>
                                     <FormControl isRequired>
-                                        <FormLabel fontSize="sm" fontWeight="medium">
+                                        <FormLabel fontSize="sm" fontWeight="medium" display="inline-flex" alignItems="center">
                                             <HStack spacing={1}>
                                                 <Icon as={FiFolder} color={mutedColor} />
                                                 <Text>Collection</Text>
@@ -663,7 +663,7 @@ const QueryManager = () => {
                                 <GridItem colSpan={{ base: 1, md: 2 }}>
                                     <FormControl isRequired>
                                         <HStack justify="space-between" mb={2}>
-                                            <FormLabel fontSize="sm" fontWeight="medium">
+                                            <FormLabel fontSize="sm" fontWeight="medium" display="inline-flex" alignItems="center">
                                                 MongoDB Query
                                             </FormLabel>
                                             <Button

@@ -375,7 +375,7 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
               <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={5} w="full">
                 <GridItem>
                   <FormControl isRequired>
-                    <FormLabel fontSize="sm" fontWeight="medium">
+                    <FormLabel fontSize="sm" fontWeight="medium" display="inline-flex" alignItems="center">
                       <HStack spacing={1}>
                         <Icon as={FiDatabase} color={mutedColor} />
                         <Text>Database Connection</Text>
@@ -456,7 +456,7 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
               </Grid>
 
               <FormControl isRequired>
-                <FormLabel fontSize="sm" fontWeight="medium">
+                <FormLabel fontSize="sm" fontWeight="medium" display="inline-flex" alignItems="center">
                   <HStack spacing={1}>
                     <Icon as={FiMessageSquare} color={mutedColor} />
                     <Text>Describe Your Query in Natural Language</Text>
