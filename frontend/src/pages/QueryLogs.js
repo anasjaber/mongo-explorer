@@ -198,9 +198,41 @@ const QueryLogs = () => {
   };
 
   const handleError = (title, error) => {
+    let errorMessage = 'An error occurred';
+    
+    if (error.response?.data) {
+      const errorData = error.response.data;
+      if (typeof errorData === 'string') {
+        errorMessage = errorData;
+        // Check for AI provider configuration message
+        if (errorData.includes('API key is not configured') || errorData.includes('AI provider')) {
+          errorMessage = 'AI provider is not configured. Please go to AI Provider Settings to configure your AI service.';
+        }
+      } else if (errorData.title) {
+        errorMessage = errorData.title;
+        if (errorData.errors) {
+          const errorDetails = Object.entries(errorData.errors)
+            .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
+            .join('; ');
+          if (errorDetails) {
+            errorMessage += ` - ${errorDetails}`;
+          }
+        }
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+        if (errorMessage.includes('API key is not configured') || errorMessage.includes('AI provider')) {
+          errorMessage = 'AI provider is not configured. Please go to AI Provider Settings to configure your AI service.';
+        }
+      } else {
+        errorMessage = JSON.stringify(errorData);
+      }
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
     toast({
       title,
-      description: error.response?.data || error.message || 'An error occurred',
+      description: errorMessage,
       status: 'error',
       duration: 5000,
       isClosable: true,

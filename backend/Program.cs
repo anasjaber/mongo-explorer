@@ -1,5 +1,6 @@
 using Backend;
 using Backend.Controllers;
+using Backend.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -109,7 +110,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<MongoConnection> MongoConnections { get; set; }
     public DbSet<Query> Queries { get; set; }
     public DbSet<QueryLog> QueryLogs { get; set; }
-    public DbSet<OpenAISettings> OpenAISettings { get; set; }
+    public DbSet<OpenAISettings> OpenAISettings { get; set; } // Keep for backward compatibility
+    public DbSet<AIProviderSettings> AIProviderSettings { get; set; }
     public DbSet<User> Users { get; set; }
 
 

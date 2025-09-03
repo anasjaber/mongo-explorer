@@ -189,7 +189,9 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
         naturalLanguageQuery
       });
 
-      setGeneratedQuery(response.data);
+      // Handle both formats for backward compatibility
+      const query = response.data.query || response.data;
+      setGeneratedQuery(query);
 
       toast({
         title: 'Query generated successfully',

@@ -88,9 +88,9 @@ const NavigationMenu = () => {
     },
     { 
       path: '/openai-settings', 
-      label: 'OpenAI Settings', 
+      label: 'AI Provider Settings', 
       icon: SettingsIcon,
-      description: 'Configure AI settings'
+      description: 'Configure AI provider settings'
     }
   ];
 

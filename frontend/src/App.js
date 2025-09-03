@@ -27,6 +27,7 @@ const QueryLogs = lazy(() => import('./pages/QueryLogs'));
 const QueryManager = lazy(() => import('./pages/QueryManager'));
 const QueryProfiler = lazy(() => import('./pages/QueryProfiler'));
 const OpenAISettings = lazy(() => import('./pages/OpenAISettings'));
+const AIProviderSettings = lazy(() => import('./pages/AIProviderSettings'));
 
 const theme = extendTheme({
   config: {
@@ -209,7 +210,12 @@ const App = () => {
                         } />
                         <Route path="/openai-settings" element={
                           <PrivateRoute isAuthenticated={isAuthenticated}>
-                            <OpenAISettings />
+                            <AIProviderSettings />
+                          </PrivateRoute>
+                        } />
+                        <Route path="/ai-provider-settings" element={
+                          <PrivateRoute isAuthenticated={isAuthenticated}>
+                            <AIProviderSettings />
                           </PrivateRoute>
                         } />
                         <Route 

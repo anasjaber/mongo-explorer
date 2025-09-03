@@ -234,7 +234,7 @@ public class MongoConnection
     [Required]
     public string DatabaseName { get; set; }
     public bool IsProfilingActive { get; set; }
-    public string ConnectionStatus { get; set; } // "success", "error", or null/unknown
+    public string? ConnectionStatus { get; set; } // "success", "error", or null/unknown
     public DateTime? LastTestedAt { get; set; }
 
 }

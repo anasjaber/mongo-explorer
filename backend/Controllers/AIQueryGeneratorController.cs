@@ -1,19 +1,17 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Backend.Models;
+using Backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Newtonsoft.Json;
-using OpenAI_API;
-using OpenAI_API.Chat;
-using OpenAI_API.Completions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using ThirdParty.Json.LitJson;
 
 [Authorize]
 [ApiController]
@@ -31,14 +29,31 @@ public class AIQueryGeneratorController : ControllerBase
     public async Task<ActionResult<string>> GenerateQuery([FromBody] QueryGenerationRequest request)
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-        var settings = await _context.OpenAISettings.FirstOrDefaultAsync(x=>x.UserId == userId);
         
-        if (settings == null || string.IsNullOrEmpty(settings.ApiKey) || string.IsNullOrEmpty(settings.Model))
+        // Try new AI provider settings first
+        var aiSettings = await _context.AIProviderSettings.FirstOrDefaultAsync(x => x.UserId == userId);
+        
+        // Fall back to legacy OpenAI settings if needed
+        if (aiSettings == null)
         {
-            return StatusCode(500, "OpenAI API key is not configured.");
+            var legacySettings = await _context.OpenAISettings.FirstOrDefaultAsync(x => x.UserId == userId);
+            if (legacySettings != null && !string.IsNullOrEmpty(legacySettings.ApiKey))
+            {
+                aiSettings = new AIProviderSettings
+                {
+                    Provider = "OpenAI",
+                    ApiKey = legacySettings.ApiKey,
+                    Model = legacySettings.Model
+                };
+            }
+        }
+        
+        if (aiSettings == null || string.IsNullOrEmpty(aiSettings.ApiKey) || string.IsNullOrEmpty(aiSettings.Model))
+        {
+            return StatusCode(500, "AI provider is not configured.");
         }
 
-        var openAi = new OpenAIAPI(settings.ApiKey);
+        var aiProvider = AIProviderFactory.CreateProvider(aiSettings);
 
         var connection = await _context.MongoConnections.FindAsync(request.ConnectionId);
         if (connection == null)
@@ -48,46 +63,35 @@ public class AIQueryGeneratorController : ControllerBase
 
         var (_, nonFormattedSchema) = await ReadSchema(connection, request.CollectionNames);
 
-        var chatMessages = GenerateChatMessages(request, nonFormattedSchema);
+        var prompt = GeneratePrompt(request, nonFormattedSchema);
 
         try
         {
-            var chatRequest = new ChatRequest()
+            Console.WriteLine($"Generating query with provider: {aiProvider.ProviderName}, Model: {aiSettings.Model}");
+            var generatedQuery = await aiProvider.GenerateQueryAsync(prompt, aiSettings.Model);
+            Console.WriteLine($"Raw generated query: {generatedQuery}");
+            generatedQuery = ExtractQueryFromJavascriptBlock(generatedQuery);
+            Console.WriteLine($"Extracted query: {generatedQuery}");
+            
+            if (string.IsNullOrWhiteSpace(generatedQuery))
             {
-                Model = settings.Model,
-                Messages = chatMessages,
-                Temperature = 0.7,
-                MaxTokens = 800,
-                TopP = 1,
-                FrequencyPenalty = 0,
-                PresencePenalty = 0
-            };
-
-            var chatResult = await openAi.Chat.CreateChatCompletionAsync(chatRequest);
-
-            if (chatResult.Choices.Count > 0)
-            {
-                var generatedQuery = chatResult.Choices[0].Message.Content.Trim();
-                generatedQuery = ExtractQueryFromJavascriptBlock(generatedQuery);
-                return Ok(generatedQuery);
+                Console.WriteLine("WARNING: Generated query is empty or null!");
+                return StatusCode(500, "Failed to generate a valid query");
             }
-            else
-            {
-                return StatusCode(500, "Failed to generate query.");
-            }
+            
+            return Ok(new { query = generatedQuery });
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"Error generating query: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
             return StatusCode(500, $"Error generating query: {ex.Message}");
         }
     }
 
-    private List<ChatMessage> GenerateChatMessages(QueryGenerationRequest request, string schemaJson)
+    private string GeneratePrompt(QueryGenerationRequest request, string schemaJson)
     {
-        var messages = new List<ChatMessage>
-        {
-            new ChatMessage(ChatMessageRole.System, "You are an AI assistant that generates MongoDB queries. Your task is to create a MongoDB query using aggregation pipeline based on the given information and user's query."),
-            new ChatMessage(ChatMessageRole.User, $@"
+        return $@"
 I need a MongoDB query for the following scenario:
 
 Collections: {string.Join(", ", request.CollectionNames)}
@@ -101,10 +105,17 @@ Please generate a MongoDB query using aggregation pipeline that answers the user
 The query should be in the form of mongo shell query with pipeline stages array. 
 Use the $lookup stage to join collections if necessary. 
 Make sure to handle potential errors and edge cases.
-Provide only the query without any additional explanation."),
-        };
 
-        return messages;
+IMPORTANT: Return ONLY the MongoDB query code in a code block. Do not include any explanation or text outside the code block.
+The query should be executable in MongoDB shell.
+
+Example format:
+```javascript
+db.collection.aggregate([
+  {{ $match: {{ field: value }} }},
+  {{ $project: {{ field1: 1, field2: 1 }} }}
+])
+```";
     }
 
     private string ExtractQueryFromCodeBlock(string content)
@@ -125,18 +136,75 @@ Provide only the query without any additional explanation."),
 
     private string ExtractQueryFromJavascriptBlock(string content)
     {
-        var startMarker = "```javascript";
-        var endMarker = "```";
-        var startIndex = content.IndexOf(startMarker);
-        var endIndex = content.LastIndexOf(endMarker);
-
-        if (startIndex != -1 && endIndex != -1 && startIndex < endIndex)
+        if (string.IsNullOrWhiteSpace(content))
+            return content;
+            
+        // Try javascript block first
+        var jsStartMarker = "```javascript";
+        var jsStartIndex = content.IndexOf(jsStartMarker);
+        if (jsStartIndex != -1)
         {
-            startIndex += startMarker.Length;
-            return content.Substring(startIndex, endIndex - startIndex).Trim();
+            var endMarker = "```";
+            var endIndex = content.IndexOf(endMarker, jsStartIndex + jsStartMarker.Length);
+            if (endIndex != -1)
+            {
+                jsStartIndex += jsStartMarker.Length;
+                return content.Substring(jsStartIndex, endIndex - jsStartIndex).Trim();
+            }
+        }
+        
+        // Try js block
+        var jsShortMarker = "```js";
+        jsStartIndex = content.IndexOf(jsShortMarker);
+        if (jsStartIndex != -1)
+        {
+            var endMarker = "```";
+            var endIndex = content.IndexOf(endMarker, jsStartIndex + jsShortMarker.Length);
+            if (endIndex != -1)
+            {
+                jsStartIndex += jsShortMarker.Length;
+                return content.Substring(jsStartIndex, endIndex - jsStartIndex).Trim();
+            }
+        }
+        
+        // Try json block
+        var jsonStartMarker = "```json";
+        var jsonStartIndex = content.IndexOf(jsonStartMarker);
+        if (jsonStartIndex != -1)
+        {
+            var endMarker = "```";
+            var endIndex = content.IndexOf(endMarker, jsonStartIndex + jsonStartMarker.Length);
+            if (endIndex != -1)
+            {
+                jsonStartIndex += jsonStartMarker.Length;
+                return content.Substring(jsonStartIndex, endIndex - jsonStartIndex).Trim();
+            }
+        }
+        
+        // Try any code block
+        var anyStartMarker = "```";
+        var anyStartIndex = content.IndexOf(anyStartMarker);
+        if (anyStartIndex != -1)
+        {
+            var endIndex = content.IndexOf(anyStartMarker, anyStartIndex + anyStartMarker.Length);
+            if (endIndex != -1)
+            {
+                // Check if there's a language identifier
+                var newlineIndex = content.IndexOf('\n', anyStartIndex);
+                if (newlineIndex != -1 && newlineIndex < endIndex)
+                {
+                    anyStartIndex = newlineIndex + 1;
+                }
+                else
+                {
+                    anyStartIndex += anyStartMarker.Length;
+                }
+                return content.Substring(anyStartIndex, endIndex - anyStartIndex).Trim();
+            }
         }
 
-        return content;
+        // If no code block found, return trimmed content
+        return content.Trim();
     }
 
     private async Task<(string formattedSchema, string nonFormattedSchema)> ReadSchema(MongoConnection connection, List<string> includedCollections)

@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Backend.Services;
+using Backend.Models;
 
 [Authorize]
 [ApiController]
@@ -217,37 +219,26 @@ public class QueryProfilerController : ControllerBase
         }
 
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-        var settings = await _context.OpenAISettings.FirstOrDefaultAsync(x => x.UserId == userId);
+        var settings = await _context.AIProviderSettings.FirstOrDefaultAsync(x => x.UserId == userId);
 
-        if (settings == null || string.IsNullOrEmpty(settings.ApiKey) || string.IsNullOrEmpty(settings.Model))
+        if (settings == null || string.IsNullOrEmpty(settings.ApiKey))
         {
-            return StatusCode(500, "OpenAI API key is not configured.");
+            return StatusCode(500, "AI provider is not configured. Please go to AI Provider Settings to configure your AI service.");
         }
 
-        var chatMessages = GenerateChatMessages(request.Query);
-        var chatRequest = new ChatRequest()
+        try
         {
-            Model = settings.Model,
-            Messages = chatMessages,
-            Temperature = 0.7,
-            MaxTokens = 800,
-            TopP = 1,
-            FrequencyPenalty = 0,
-            PresencePenalty = 0
-        };
-        var openAiApiKey = settings.ApiKey;
-        var openAi = new OpenAIAPI(openAiApiKey);
-        var chatResult = await openAi.Chat.CreateChatCompletionAsync(chatRequest);
-
-        if (chatResult.Choices.Count > 0)
-        {
-            var generatedQuery = chatResult.Choices[0].Message.Content.Trim();
+            var aiService = AIProviderFactory.CreateProvider(settings);
+            var prompt = $"Suggest MongoDB indexes for the following query: {request.Query} . " +
+                        "Provide only the indexes in json array [collectionName: string,index:jsonObject] without any additional explanation.";
+            
+            var generatedQuery = await aiService.GenerateQueryAsync(prompt, settings.Model);
             generatedQuery = ExtractQueryFromCodeBlock(generatedQuery);
             return Ok(generatedQuery);
         }
-        else
+        catch (Exception ex)
         {
-            return StatusCode(500, "Failed to generate query.");
+            return StatusCode(500, $"Failed to generate indexes: {ex.Message}");
         }
     }
 
@@ -268,55 +259,31 @@ public class QueryProfilerController : ControllerBase
             return NotFound();
         }
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-        var settings = await _context.OpenAISettings.FirstOrDefaultAsync(x => x.UserId == userId);
+        var settings = await _context.AIProviderSettings.FirstOrDefaultAsync(x => x.UserId == userId);
 
-        if (settings == null || string.IsNullOrEmpty(settings.ApiKey) || string.IsNullOrEmpty(settings.Model))
+        if (settings == null || string.IsNullOrEmpty(settings.ApiKey))
         {
-            return StatusCode(500, "OpenAI API key is not configured.");
+            return StatusCode(500, "AI provider is not configured. Please go to AI Provider Settings to configure your AI service.");
         }
 
-        string queryText = $"db.getCollection(\"{log.Query.CollectionName}\").aggregate([{log.QueryText}])";
-        var chatMessages = GenerateChatMessages(log.QueryText);
-        var chatRequest = new ChatRequest()
+        try
         {
-            Model = settings.Model,
-            Messages = chatMessages,
-            Temperature = 0.7,
-            MaxTokens = 800,
-            TopP = 1,
-            FrequencyPenalty = 0,
-            PresencePenalty = 0
-        };
-
-        var openAiApiKey = settings.ApiKey;
-        var openAi = new OpenAIAPI(openAiApiKey);
-        var chatResult = await openAi.Chat.CreateChatCompletionAsync(chatRequest);
-
-        if (chatResult.Choices.Count > 0)
-        {
-            var generatedQuery = chatResult.Choices[0].Message.Content.Trim();
+            var aiService = AIProviderFactory.CreateProvider(settings);
+            string queryText = $"db.getCollection(\"{log.Query.CollectionName}\").aggregate([{log.QueryText}])";
+            var prompt = $"Suggest MongoDB indexes for the following query: {log.QueryText} . " +
+                        "Provide only the indexes in json array [collectionName: string,index:jsonObject] without any additional explanation.";
+            
+            var generatedQuery = await aiService.GenerateQueryAsync(prompt, settings.Model);
             generatedQuery = ExtractQueryFromCodeBlock(generatedQuery);
-            //List<string> generatedIndexes = JsonConvert.DeserializeObject<List<string>>(generatedQuery);
-
             return Ok(generatedQuery);
         }
-        else
+        catch (Exception ex)
         {
-            return StatusCode(500, "Failed to generate query.");
+            return StatusCode(500, $"Failed to generate indexes: {ex.Message}");
         }
     }
 
 
-    private List<ChatMessage> GenerateChatMessages(string queryString)
-    {
-        var messages = new List<ChatMessage>
-        {
-            new ChatMessage(ChatMessageRole.User, $"Suggest MongoDB indexes for the following query: {queryString} ." +
-            @$"Provide only the indexes in json array [collectionName: string,index:jsonObject] without any additional explanation."),
-        };
-
-        return messages;
-    }
 
     private string ExtractQueryFromCodeBlock(string content)
     {
