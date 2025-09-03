@@ -35,8 +35,13 @@ const theme = extendTheme({
   },
   styles: {
     global: (props) => ({
-      body: {
+      'html, body': {
         bg: props.colorMode === 'dark' ? 'gray.900' : 'gray.50',
+        overflowX: 'hidden',
+      },
+      '#root': {
+        minHeight: '100vh',
+        overflow: 'hidden',
       },
     }),
   },
@@ -48,6 +53,13 @@ const theme = extendTheme({
     Button: {
       defaultProps: {
         colorScheme: 'blue',
+      },
+    },
+    Tooltip: {
+      baseStyle: {
+        borderRadius: 'md',
+        px: '3',
+        py: '2',
       },
     },
   },

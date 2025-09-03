@@ -118,11 +118,36 @@ public class MongoConnectionController : ControllerBase
 
             var database = mongoClient.GetDatabase(connection.DatabaseName);
             await database.RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
-            return Ok("Connection successful");
+            
+            // Update the connection status in the database if it has an ID
+            if (connection.Id > 0)
+            {
+                var existingConnection = await _context.MongoConnections.FindAsync(connection.Id);
+                if (existingConnection != null)
+                {
+                    existingConnection.ConnectionStatus = "success";
+                    existingConnection.LastTestedAt = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                }
+            }
+            
+            return Ok(new { status = "success", message = "Connection successful" });
         }
         catch (Exception ex)
         {
-            return BadRequest($"Connection failed: {ex.Message}");
+            // Update the connection status in the database if it has an ID
+            if (connection.Id > 0)
+            {
+                var existingConnection = await _context.MongoConnections.FindAsync(connection.Id);
+                if (existingConnection != null)
+                {
+                    existingConnection.ConnectionStatus = "error";
+                    existingConnection.LastTestedAt = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                }
+            }
+            
+            return BadRequest(new { status = "error", message = $"Connection failed: {ex.Message}" });
         }
     }
 
@@ -209,5 +234,7 @@ public class MongoConnection
     [Required]
     public string DatabaseName { get; set; }
     public bool IsProfilingActive { get; set; }
+    public string ConnectionStatus { get; set; } // "success", "error", or null/unknown
+    public DateTime? LastTestedAt { get; set; }
 
 }

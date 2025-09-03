@@ -70,11 +70,12 @@ import {
     useBreakpointValue,
     Collapse,
     InputRightElement,
-    Progress
+    Progress,
+    Textarea
 } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import ReactJson from 'react-json-view';
-import { FiDatabase, FiServer, FiLink, FiActivity, FiLock, FiUnlock, FiCopy, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiDatabase, FiServer, FiLink, FiActivity, FiLock, FiUnlock, FiCopy } from 'react-icons/fi';
 
 import api from './api';
 
@@ -88,8 +89,6 @@ const ConnectionManager = () => {
     const [schema, setSchema] = useState(null);
     const [isAlertOpen, setIsAlertOpen] = useState(false);
     const [connectionIdToDelete, setConnectionIdToDelete] = useState(null);
-    const [showPassword, setShowPassword] = useState(false);
-    const [testResults, setTestResults] = useState({});
     const [isFormExpanded, setIsFormExpanded] = useState(false);
 
     const toast = useToast();
@@ -186,12 +185,14 @@ const ConnectionManager = () => {
         setTestingConnection(connection);
         onOpenTestModal();
         try {
-            await api.post(`/MongoConnection/test`, connection);
-            setTestResults(prev => ({ ...prev, [connection.id]: 'success' }));
+            const response = await api.post(`/MongoConnection/test`, connection);
             handleSuccess('Connection test successful', 'The connection is working correctly.');
+            // Immediately refresh connections to get updated status from database
+            await fetchConnections();
         } catch (error) {
-            setTestResults(prev => ({ ...prev, [connection.id]: 'error' }));
             handleError('Connection test failed', error);
+            // Refresh connections even on error to update status
+            await fetchConnections();
         } finally {
             setTestingConnection(null);
             onCloseTestModal();
@@ -252,7 +253,7 @@ const ConnectionManager = () => {
                             </Text>
                         </VStack>
                         <HStack>
-                            <Tooltip label="Refresh connections">
+                            <Tooltip label="Refresh connections" placement="bottom" hasArrow>
                                 <IconButton
                                     icon={<RepeatIcon />}
                                     onClick={fetchConnections}
@@ -297,7 +298,7 @@ const ConnectionManager = () => {
                                     </HStack>
                                 </StatLabel>
                                 <StatNumber fontSize="2xl" color={successColor}>
-                                    {Object.values(testResults).filter(r => r === 'success').length}
+                                    {connections.filter(conn => conn.connectionStatus === 'success').length}
                                 </StatNumber>
                                 <StatHelpText>Successfully tested</StatHelpText>
                             </Stat>
@@ -384,6 +385,7 @@ const ConnectionManager = () => {
                                             size="lg"
                                             borderRadius="lg"
                                             focusBorderColor={accentColor}
+                                            autoComplete="off"
                                         />
                                     </InputGroup>
                                     <FormHelperText fontSize="xs">
@@ -395,34 +397,22 @@ const ConnectionManager = () => {
                                     <FormLabel fontSize="sm" fontWeight="medium">
                                         Connection String
                                     </FormLabel>
-                                    <InputGroup>
-                                        <InputLeftElement pointerEvents="none">
-                                            <Icon as={FiLink} color={mutedColor} />
-                                        </InputLeftElement>
-                                        <Input
-                                            name="connectionString"
-                                            type={showPassword ? "text" : "password"}
-                                            value={editingConnection ? editingConnection.connectionString : newConnection.connectionString}
-                                            onChange={handleInputChange}
-                                            placeholder="mongodb://localhost:27017"
-                                            size="lg"
-                                            borderRadius="lg"
-                                            focusBorderColor={accentColor}
-                                            pr="4.5rem"
-                                        />
-                                        <InputRightElement width="4.5rem">
-                                            <Button 
-                                                h="1.75rem" 
-                                                size="sm" 
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                variant="ghost"
-                                            >
-                                                <Icon as={showPassword ? FiEyeOff : FiEye} />
-                                            </Button>
-                                        </InputRightElement>
-                                    </InputGroup>
+                                    <Textarea
+                                        name="connectionString"
+                                        value={editingConnection ? editingConnection.connectionString : newConnection.connectionString}
+                                        onChange={handleInputChange}
+                                        placeholder="mongodb://localhost:27017\nor\nmongodb+srv://username:password@cluster.mongodb.net"
+                                        size="lg"
+                                        borderRadius="lg"
+                                        focusBorderColor={accentColor}
+                                        minHeight="100px"
+                                        resize="vertical"
+                                        fontFamily="mono"
+                                        fontSize="sm"
+                                        autoComplete="off"
+                                    />
                                     <FormHelperText fontSize="xs">
-                                        MongoDB connection URI including authentication
+                                        MongoDB connection URI including authentication. Supports both standard and SRV connection strings.
                                     </FormHelperText>
                                 </FormControl>
 
@@ -517,18 +507,18 @@ const ConnectionManager = () => {
                                                 <Td>
                                                     <Tooltip 
                                                         label={
-                                                            testResults[conn.id] === 'success' 
-                                                                ? 'Connection tested successfully'
-                                                                : testResults[conn.id] === 'error'
-                                                                ? 'Connection test failed'
+                                                            conn.connectionStatus === 'success' 
+                                                                ? `Connection tested successfully${conn.lastTestedAt ? ` at ${new Date(conn.lastTestedAt).toLocaleString()}` : ''}`
+                                                                : conn.connectionStatus === 'error'
+                                                                ? `Connection test failed${conn.lastTestedAt ? ` at ${new Date(conn.lastTestedAt).toLocaleString()}` : ''}`
                                                                 : 'Not tested yet'
                                                         }
                                                     >
                                                         <Badge
                                                             colorScheme={
-                                                                testResults[conn.id] === 'success' 
+                                                                conn.connectionStatus === 'success' 
                                                                     ? 'green'
-                                                                    : testResults[conn.id] === 'error'
+                                                                    : conn.connectionStatus === 'error'
                                                                     ? 'red'
                                                                     : 'gray'
                                                             }
@@ -537,18 +527,18 @@ const ConnectionManager = () => {
                                                         >
                                                             <Icon 
                                                                 as={
-                                                                    testResults[conn.id] === 'success'
+                                                                    conn.connectionStatus === 'success'
                                                                         ? FiUnlock
-                                                                        : testResults[conn.id] === 'error'
+                                                                        : conn.connectionStatus === 'error'
                                                                         ? FiLock
                                                                         : FiActivity
                                                                 }
                                                                 mr={1}
                                                             />
                                                             {
-                                                                testResults[conn.id] === 'success'
+                                                                conn.connectionStatus === 'success'
                                                                     ? 'Active'
-                                                                    : testResults[conn.id] === 'error'
+                                                                    : conn.connectionStatus === 'error'
                                                                     ? 'Error'
                                                                     : 'Unknown'
                                                             }
@@ -568,7 +558,7 @@ const ConnectionManager = () => {
                                                 </Td>
                                                 <Td>
                                                     <HStack spacing={2} wrap="wrap">
-                                                        <Tooltip label="Edit connection">
+                                                        <Tooltip label="Edit connection" placement="top" hasArrow>
                                                             <IconButton
                                                                 icon={<EditIcon />}
                                                                 onClick={() => {
@@ -581,7 +571,7 @@ const ConnectionManager = () => {
                                                                 aria-label="Edit"
                                                             />
                                                         </Tooltip>
-                                                        <Tooltip label="Test connection">
+                                                        <Tooltip label="Test connection" placement="top" hasArrow>
                                                             <IconButton
                                                                 icon={<CheckIcon />}
                                                                 onClick={() => handleTestConnection(conn)}
@@ -591,7 +581,7 @@ const ConnectionManager = () => {
                                                                 aria-label="Test"
                                                             />
                                                         </Tooltip>
-                                                        <Tooltip label="View schema">
+                                                        <Tooltip label="View schema" placement="top" hasArrow>
                                                             <IconButton
                                                                 icon={<ViewIcon />}
                                                                 onClick={() => handleFetchSchema(conn.id)}
@@ -601,7 +591,7 @@ const ConnectionManager = () => {
                                                                 aria-label="Schema"
                                                             />
                                                         </Tooltip>
-                                                        <Tooltip label="Delete connection">
+                                                        <Tooltip label="Delete connection" placement="top" hasArrow>
                                                             <IconButton
                                                                 icon={<DeleteIcon />}
                                                                 onClick={() => confirmDelete(conn.id)}
