@@ -31,7 +31,7 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddSignalR();
 
-string allowedOriginsEnv = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS") ?? "http://localhost:3000";
+string allowedOriginsEnv = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS") ?? "http://localhost:3000,http://localhost:3001,http://localhost:3002";
 string[] allowedOrigins = allowedOriginsEnv.Split(',');
 
 builder.Services.AddCors(options =>
