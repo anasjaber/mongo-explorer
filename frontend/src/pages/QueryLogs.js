@@ -303,10 +303,13 @@ const QueryLogs = () => {
                   </HStack>
                 </StatLabel>
                 <StatNumber fontSize="2xl" color={warningColor}>
-                  {logs.length > 0 
-                    ? Math.round(logs.reduce((sum, l) => sum + (l.duration || 0), 0) / logs.length)
-                    : 0
-                  }ms
+                  {(() => {
+                    if (!logs || logs.length === 0) return '0ms';
+                    const validDurations = logs.filter(l => l && typeof l.duration === 'number' && !isNaN(l.duration));
+                    if (validDurations.length === 0) return '0ms';
+                    const avg = Math.round(validDurations.reduce((sum, l) => sum + l.duration, 0) / validDurations.length);
+                    return isNaN(avg) ? '0ms' : `${avg}ms`;
+                  })()}
                 </StatNumber>
                 <StatHelpText>Query execution</StatHelpText>
               </Stat>

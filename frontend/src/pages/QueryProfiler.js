@@ -745,7 +745,27 @@ const QueryProfiler = () => {
                                                                 px={3}
                                                                 py={1}
                                                             >
-                                                                {query.executionTimeMs}ms
+                                                                {(() => {
+                                                                    // Handle both integer ms and TimeSpan string formats
+                                                                    const time = query.executionTimeMs;
+                                                                    if (typeof time === 'number') {
+                                                                        return `${time}ms`;
+                                                                    } else if (typeof time === 'string') {
+                                                                        // Parse TimeSpan format (e.g., "00:00:00.0790294")
+                                                                        const match = time.match(/(\d{2}):(\d{2}):(\d{2})\.(\d+)/);
+                                                                        if (match) {
+                                                                            const hours = parseInt(match[1]);
+                                                                            const minutes = parseInt(match[2]);
+                                                                            const seconds = parseInt(match[3]);
+                                                                            const ms = Math.round(parseFloat(`0.${match[4]}`) * 1000);
+                                                                            const totalMs = (hours * 3600000) + (minutes * 60000) + (seconds * 1000) + ms;
+                                                                            return `${totalMs}ms`;
+                                                                        }
+                                                                        // If can't parse, show the original value without "MS" suffix
+                                                                        return time.replace(/MS$/i, 'ms');
+                                                                    }
+                                                                    return '0ms';
+                                                                })()}
                                                             </Badge>
                                                             {query.executionTimeMs > 100 && (
                                                                 <Tag size="sm" colorScheme="red" variant="subtle">
@@ -878,7 +898,27 @@ const QueryProfiler = () => {
                                                 px={3}
                                                 py={1}
                                             >
-                                                {selectedQuery.executionTimeMs}ms
+                                                {(() => {
+                                                    // Handle both integer ms and TimeSpan string formats
+                                                    const time = selectedQuery.executionTimeMs;
+                                                    if (typeof time === 'number') {
+                                                        return `${time}ms`;
+                                                    } else if (typeof time === 'string') {
+                                                        // Parse TimeSpan format (e.g., "00:00:00.0790294")
+                                                        const match = time.match(/(\d{2}):(\d{2}):(\d{2})\.(\d+)/);
+                                                        if (match) {
+                                                            const hours = parseInt(match[1]);
+                                                            const minutes = parseInt(match[2]);
+                                                            const seconds = parseInt(match[3]);
+                                                            const ms = Math.round(parseFloat(`0.${match[4]}`) * 1000);
+                                                            const totalMs = (hours * 3600000) + (minutes * 60000) + (seconds * 1000) + ms;
+                                                            return `${totalMs}ms`;
+                                                        }
+                                                        // If can't parse, show the original value without "MS" suffix
+                                                        return time.replace(/MS$/i, 'ms');
+                                                    }
+                                                    return '0ms';
+                                                })()}
                                             </Badge>
                                         </GridItem>
                                         <GridItem>

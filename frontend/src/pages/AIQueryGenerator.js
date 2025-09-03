@@ -95,6 +95,7 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [schema, setSchema] = useState(null);
   const [copiedQuery, setCopiedQuery] = useState(false);
+  const [aiSettings, setAiSettings] = useState({ provider: '', model: '' });
   const toast = useToast();
   
   const bgColor = useColorModeValue('white', 'gray.800');
@@ -112,6 +113,7 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
 
   useEffect(() => {
     fetchConnections();
+    fetchAISettings();
   }, []);
 
   useEffect(() => {
@@ -119,6 +121,21 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
       fetchCollections(selectedConnection.value);
     }
   }, [selectedConnection]);
+
+  const fetchAISettings = async () => {
+    try {
+      const response = await api.get(`/AIProviderSettings`);
+      if (response.data) {
+        setAiSettings({
+          provider: response.data.provider || '',
+          model: response.data.model || ''
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching AI settings', error);
+      // Don't show error toast for settings fetch, just use defaults
+    }
+  };
 
   const fetchConnections = async () => {
     setIsLoading(true);
@@ -340,9 +357,19 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
                     </HStack>
                   </StatLabel>
                   <StatNumber fontSize="lg" color={warningColor}>
-                    GPT-4
+                    {(() => {
+                      if (!aiSettings.model) return 'Not Configured';
+                      // Extract model name from the full path (e.g., "openai/gpt-4" -> "gpt-4")
+                      const modelName = aiSettings.model.includes('/') 
+                        ? aiSettings.model.split('/').pop() 
+                        : aiSettings.model;
+                      // Format the model name for better display
+                      return modelName
+                        .replace(/-/g, ' ')
+                        .replace(/\b\w/g, l => l.toUpperCase());
+                    })()}
                   </StatNumber>
-                  <StatHelpText>Active</StatHelpText>
+                  <StatHelpText>{aiSettings.provider || 'No Provider'}</StatHelpText>
                 </Stat>
               </CardBody>
             </Card>

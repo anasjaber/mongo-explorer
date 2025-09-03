@@ -91,7 +91,8 @@ import {
     MenuButton,
     MenuList,
     MenuItem,
-    MenuDivider
+    MenuDivider,
+    Portal
 } from '@chakra-ui/react';
 import { Select } from 'chakra-react-select';
 import { lazy, default as React, useCallback, useEffect, useState } from 'react';
@@ -278,33 +279,49 @@ const QueryManager = () => {
     };
 
     const handleExecuteQuery = async (query, download = false) => {
-        setIsLoading(true);
+        // Set the query as executing
+        setExecutingQueries(prev => new Set(prev).add(query.id));
         setSelectedQuery(query);
+        setQueryResult(null); // Reset previous result
 
         try {
             const response = await api.post(`/Query/${query.id}/execute`);
-            setQueryResult(response.data);
+            
+            if (response.data) {
+                setQueryResult(response.data);
 
-            if (download) {
-                const jsonResponse = await api.get(`/Query/${query.id}/download-json`, {
-                    responseType: 'blob'
-                });
-                const url = window.URL.createObjectURL(new Blob([jsonResponse.data]));
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', `query_result_${query.id}.json`);
-                document.body.appendChild(link);
-                link.click();
-                link.parentNode.removeChild(link);
-            } else {
-                handleSuccess('Query executed successfully');
-                onOpenResultModal();
+                if (download) {
+                    const jsonResponse = await api.get(`/Query/${query.id}/download-json`, {
+                        responseType: 'blob'
+                    });
+                    const url = window.URL.createObjectURL(new Blob([jsonResponse.data]));
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', `query_result_${query.id}.json`);
+                    document.body.appendChild(link);
+                    link.click();
+                    link.parentNode.removeChild(link);
+                    handleSuccess('Query results downloaded successfully');
+                } else {
+                    handleSuccess('Query executed successfully');
+                    onOpenResultModal();
+                }
+                
+                // Refresh queries to update run count
+                fetchQueries();
+                fetchFavoriteQueries();
             }
         } catch (error) {
             handleError('Error executing query', error);
+            setQueryResult(null);
+        } finally {
+            // Remove from executing queries
+            setExecutingQueries(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(query.id);
+                return newSet;
+            });
         }
-
-        setIsLoading(false);
     };
 
     const handleConnectionChange = async (selectedOption) => {
@@ -824,6 +841,7 @@ const QueryManager = () => {
                             handleDeleteQuery={handleDeleteQuery}
                             handleFavourite={handleFavourite}
                             handleFetchSchema={handleFetchSchema}
+                            executingQueries={executingQueries}
                         />
                     </TabPanel>
                     <TabPanel>
@@ -839,6 +857,7 @@ const QueryManager = () => {
                             handleDeleteQuery={handleDeleteQuery}
                             handleFavourite={handleFavourite}
                             handleFetchSchema={handleFetchSchema}
+                            executingQueries={executingQueries}
                         />
                     </TabPanel>
                 </TabPanels>
@@ -1055,7 +1074,7 @@ const QueryManager = () => {
     );
 };
 
-const QueryTable = ({ queries, isLoading, handleEditQuery, handleExecuteQuery, handleDeleteQuery, handleFavourite, handleFetchSchema }) => {
+const QueryTable = ({ queries, isLoading, handleEditQuery, handleExecuteQuery, handleDeleteQuery, handleFavourite, handleFetchSchema, executingQueries = new Set() }) => {
     const tableBg = useColorModeValue('white', 'gray.700');
     const tableHoverBg = useColorModeValue('gray.50', 'gray.600');
     const borderColor = useColorModeValue('gray.200', 'gray.600');
@@ -1063,7 +1082,7 @@ const QueryTable = ({ queries, isLoading, handleEditQuery, handleExecuteQuery, h
     const accentColor = useColorModeValue('blue.500', 'blue.400');
 
     return (
-        <Card borderRadius="xl" boxShadow="md" overflow="hidden">
+        <Card borderRadius="xl" boxShadow="md">
             <CardBody p={0}>
                 {isLoading ? (
                     <Center py={10}>
@@ -1073,7 +1092,7 @@ const QueryTable = ({ queries, isLoading, handleEditQuery, handleExecuteQuery, h
                         </VStack>
                     </Center>
                 ) : queries.length > 0 ? (
-                    <Box overflowX="auto">
+                    <Box overflowX="auto" position="relative">
                         <Table variant="simple" size="md">
                             <Thead bg={useColorModeValue('gray.50', 'gray.800')}>
                                 <Tr>
@@ -1140,33 +1159,38 @@ const QueryTable = ({ queries, isLoading, handleEditQuery, handleExecuteQuery, h
                                                 <Menu>
                                                     <MenuButton
                                                         as={IconButton}
-                                                        icon={<FiPlay />}
+                                                        icon={executingQueries.has(query.id) ? <Spinner size="sm" /> : <FiPlay />}
                                                         size="sm"
                                                         variant="solid"
                                                         colorScheme="green"
                                                         aria-label="Execute options"
+                                                        isDisabled={executingQueries.has(query.id)}
                                                     />
-                                                    <MenuList>
-                                                        <MenuItem 
-                                                            icon={<CheckIcon />} 
-                                                            onClick={() => handleExecuteQuery(query)}
-                                                        >
-                                                            Execute Query
-                                                        </MenuItem>
-                                                        <MenuItem 
-                                                            icon={<DownloadIcon />} 
-                                                            onClick={() => handleExecuteQuery(query, true)}
-                                                        >
-                                                            Download Results
-                                                        </MenuItem>
-                                                        <MenuDivider />
-                                                        <MenuItem 
-                                                            icon={<ViewIcon />} 
-                                                            onClick={() => handleFetchSchema(query.connectionId, query.collectionName)}
-                                                        >
-                                                            View Schema
-                                                        </MenuItem>
-                                                    </MenuList>
+                                                    <Portal>
+                                                        <MenuList zIndex={1500}>
+                                                            <MenuItem 
+                                                                icon={<CheckIcon />} 
+                                                                onClick={() => handleExecuteQuery(query)}
+                                                                isDisabled={executingQueries.has(query.id)}
+                                                            >
+                                                                Execute Query
+                                                            </MenuItem>
+                                                            <MenuItem 
+                                                                icon={<DownloadIcon />} 
+                                                                onClick={() => handleExecuteQuery(query, true)}
+                                                                isDisabled={executingQueries.has(query.id)}
+                                                            >
+                                                                Download Results
+                                                            </MenuItem>
+                                                            <MenuDivider />
+                                                            <MenuItem 
+                                                                icon={<ViewIcon />} 
+                                                                onClick={() => handleFetchSchema(query.connectionId, query.collectionName)}
+                                                            >
+                                                                View Schema
+                                                            </MenuItem>
+                                                        </MenuList>
+                                                    </Portal>
                                                 </Menu>
 
                                                 <Tooltip label="Edit query">
