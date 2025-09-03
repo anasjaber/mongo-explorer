@@ -844,12 +844,20 @@ const QueryManager = () => {
                 </TabPanels>
             </Tabs>
 
-            <Modal isOpen={isSchemaModalOpen} onClose={onCloseSchemaModal} size="full">
+            <Modal 
+                isOpen={isSchemaModalOpen} 
+                onClose={onCloseSchemaModal} 
+                size="6xl"
+                scrollBehavior="inside"
+            >
                 <ModalOverlay />
-                <ModalContent>
+                <ModalContent 
+                    maxH="90vh"
+                    mx={4}
+                >
                     <ModalHeader>Schema Viewer</ModalHeader>
                     <ModalCloseButton />
-                    <ModalBody>
+                    <ModalBody overflowY="auto">
                         {schemaData && (
                             <ReactJson
                                 src={schemaData}
@@ -868,21 +876,38 @@ const QueryManager = () => {
                 </ModalContent>
             </Modal>
 
-            <Modal isOpen={isAIGeneratorOpen} onClose={onCloseAIGenerator} size="full">
+            <Modal 
+                isOpen={isAIGeneratorOpen} 
+                onClose={onCloseAIGenerator} 
+                size="6xl"
+                scrollBehavior="inside"
+            >
                 <ModalOverlay />
-                <ModalContent>
+                <ModalContent 
+                    maxH="90vh"
+                    mx={4}
+                >
                     <ModalHeader>AI Query Generator</ModalHeader>
                     <ModalCloseButton />
-                    <ModalBody>
+                    <ModalBody overflowY="auto">
                         <AIQueryGenerator onClose={handleAIGeneratorClose} isDialog={true} />
                     </ModalBody>
                 </ModalContent>
             </Modal>
 
                 {/* Query Result Modal */}
-                <Modal isOpen={isResultModalOpen} onClose={onCloseResultModal} size="full">
+                <Modal 
+                    isOpen={isResultModalOpen} 
+                    onClose={onCloseResultModal} 
+                    size="6xl"
+                    scrollBehavior="inside"
+                >
                     <ModalOverlay backdropFilter="blur(5px)" />
-                    <ModalContent borderRadius="xl" m={4}>
+                    <ModalContent 
+                        borderRadius="xl" 
+                        maxH="90vh"
+                        mx={4}
+                    >
                         <ModalHeader borderBottom="1px" borderColor={borderColor}>
                             <HStack spacing={3}>
                                 <Icon as={CheckIcon} color={successColor} boxSize={5} />
@@ -895,7 +920,7 @@ const QueryManager = () => {
                             </HStack>
                         </ModalHeader>
                         <ModalCloseButton />
-                        <ModalBody py={6}>
+                        <ModalBody py={6} overflowY="auto">
                             <Box 
                                 bg={useColorModeValue('gray.50', 'gray.900')}
                                 p={4}

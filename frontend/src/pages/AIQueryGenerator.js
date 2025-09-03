@@ -581,9 +581,18 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
           </ScaleFade>
         )}
 
-        <Modal isOpen={isOpen} onClose={onModalClose} size="full">
+        <Modal 
+          isOpen={isOpen} 
+          onClose={onModalClose} 
+          size="6xl"
+          scrollBehavior="inside"
+        >
           <ModalOverlay backdropFilter="blur(5px)" />
-          <ModalContent borderRadius="xl" m={4} maxWidth="90%">
+          <ModalContent 
+            borderRadius="xl" 
+            maxH="90vh"
+            mx={4}
+          >
             <ModalHeader borderBottom="1px" borderColor={borderColor}>
               <HStack spacing={3}>
                 <Icon as={FiLayers} color={accentColor} boxSize={5} />
@@ -596,13 +605,11 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
               </HStack>
             </ModalHeader>
             <ModalCloseButton />
-            <ModalBody py={6}>
+            <ModalBody py={6} overflowY="auto">
               <Box 
                 bg={useColorModeValue('gray.50', 'gray.900')}
                 p={4}
                 borderRadius="lg"
-                maxH="70vh"
-                overflowY="auto"
                 css={{
                   '&::-webkit-scrollbar': {
                     width: '8px',
