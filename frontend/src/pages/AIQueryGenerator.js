@@ -108,7 +108,8 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
   const codeBg = useColorModeValue('gray.900', 'gray.950');
   const hoverBg = useColorModeValue('gray.50', 'gray.600');
   const isMobile = useBreakpointValue({ base: true, md: false });
-  
+  const modalSize = useBreakpointValue({ base: 'full', md: '6xl' });
+
   const { isOpen, onOpen, onClose: onModalClose } = useDisclosure();
 
   useEffect(() => {
@@ -610,10 +611,10 @@ const AIQueryGenerator = ({ onClose, isDialog }) => {
           </ScaleFade>
         )}
 
-        <Modal 
-          isOpen={isOpen} 
-          onClose={onModalClose} 
-          size="6xl"
+        <Modal
+          isOpen={isOpen}
+          onClose={onModalClose}
+          size={modalSize}
           scrollBehavior="inside"
         >
           <ModalOverlay backdropFilter="blur(5px)" />

@@ -105,6 +105,7 @@ const ConnectionManager = () => {
     const tableBg = useColorModeValue('gray.50', 'gray.800');
     const tableHoverBg = useColorModeValue('gray.100', 'gray.700');
     const isMobile = useBreakpointValue({ base: true, md: false });
+    const modalSize = useBreakpointValue({ base: 'full', md: '6xl' });
     const { isOpen: isSchemaModalOpen, onOpen: onOpenSchemaModal, onClose: onCloseSchemaModal } = useDisclosure();
     const { isOpen: isTestModalOpen, onOpen: onOpenTestModal, onClose: onCloseTestModal } = useDisclosure();
     const cancelRef = React.useRef();
@@ -750,10 +751,10 @@ const ConnectionManager = () => {
                 </Modal>
 
                 {/* Schema Viewer Modal */}
-                <Modal 
-                    isOpen={isSchemaModalOpen} 
-                    onClose={onCloseSchemaModal} 
-                    size="6xl"
+                <Modal
+                    isOpen={isSchemaModalOpen}
+                    onClose={onCloseSchemaModal}
+                    size={modalSize}
                     scrollBehavior="inside"
                 >
                     <ModalOverlay backdropFilter="blur(5px)" />

@@ -5,9 +5,9 @@ import {
     TimeIcon,
     ViewIcon
 } from '@chakra-ui/icons';
-import { 
+import {
     Badge,
-    Box, 
+    Box,
     Button,
     Card,
     CardBody,
@@ -27,9 +27,10 @@ import {
     StatHelpText,
     StatLabel,
     StatNumber,
-    Text, 
+    Text,
     Tooltip,
-    useClipboard, 
+    useBreakpointValue,
+    useClipboard,
     useColorMode,
     useColorModeValue,
     useToast,
@@ -63,7 +64,8 @@ const MongoQueryViewer = ({ query, metadata = {} }) => {
     const scrollThumbHoverBg = useColorModeValue('#555', '#718096');
     const lineNumberColor = useColorModeValue('#999', '#666');
     const toast = useToast();
-    
+    const maxHeight = useBreakpointValue({ base: '300px', md: '600px' });
+
     const [formattedQuery, setFormattedQuery] = useState('');
     const [syntaxTheme, setSyntaxTheme] = useState('auto');
     const [wrapLines, setWrapLines] = useState(true);
@@ -364,9 +366,9 @@ const MongoQueryViewer = ({ query, metadata = {} }) => {
 
                 <CardBody>
                     {/* Query Content */}
-                    <Box 
+                    <Box
                         p={4}
-                        maxHeight="600px"
+                        maxHeight={maxHeight}
                         overflowY="auto"
                         overflowX={wrapLines ? "hidden" : "auto"}
                         bg={codeBg}
