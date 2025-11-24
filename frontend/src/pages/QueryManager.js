@@ -138,6 +138,7 @@ const QueryManager = () => {
     const tableHoverBg = useColorModeValue('gray.100', 'gray.700');
     const codeBg = useColorModeValue('gray.900', 'gray.950');
     const isMobile = useBreakpointValue({ base: true, md: false });
+    const modalSize = useBreakpointValue({ base: 'full', md: '6xl' });
 
     const [queries, setQueries] = useState([]);
     const [favoriteQueries, setFavoriteQueries] = useState([]);
@@ -863,10 +864,10 @@ const QueryManager = () => {
                 </TabPanels>
             </Tabs>
 
-            <Modal 
-                isOpen={isSchemaModalOpen} 
-                onClose={onCloseSchemaModal} 
-                size="6xl"
+            <Modal
+                isOpen={isSchemaModalOpen}
+                onClose={onCloseSchemaModal}
+                size={modalSize}
                 scrollBehavior="inside"
             >
                 <ModalOverlay />
@@ -895,10 +896,10 @@ const QueryManager = () => {
                 </ModalContent>
             </Modal>
 
-            <Modal 
-                isOpen={isAIGeneratorOpen} 
-                onClose={onCloseAIGenerator} 
-                size="6xl"
+            <Modal
+                isOpen={isAIGeneratorOpen}
+                onClose={onCloseAIGenerator}
+                size={modalSize}
                 scrollBehavior="inside"
             >
                 <ModalOverlay />
@@ -915,10 +916,10 @@ const QueryManager = () => {
             </Modal>
 
                 {/* Query Result Modal */}
-                <Modal 
-                    isOpen={isResultModalOpen} 
-                    onClose={onCloseResultModal} 
-                    size="6xl"
+                <Modal
+                    isOpen={isResultModalOpen}
+                    onClose={onCloseResultModal}
+                    size={modalSize}
                     scrollBehavior="inside"
                 >
                     <ModalOverlay backdropFilter="blur(5px)" />

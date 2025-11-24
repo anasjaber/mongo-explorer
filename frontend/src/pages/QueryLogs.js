@@ -119,6 +119,7 @@ const QueryLogs = () => {
   const errorColor = useColorModeValue('red.500', 'red.400');
   const tableHoverBg = useColorModeValue('gray.50', 'gray.600');
   const isMobile = useBreakpointValue({ base: true, md: false });
+  const modalSize = useBreakpointValue({ base: 'full', md: 'xl' });
   const {
     isOpen: isQueryModalOpen,
     onOpen: onOpenQueryModal,
@@ -607,7 +608,7 @@ const QueryLogs = () => {
         </Card>
 
         {/* Query Detail Modal */}
-        <Modal isOpen={isQueryModalOpen} onClose={onCloseQueryModal} size="xl">
+        <Modal isOpen={isQueryModalOpen} onClose={onCloseQueryModal} size={modalSize}>
           <ModalOverlay backdropFilter="blur(5px)" />
           <ModalContent borderRadius="xl">
             <ModalHeader borderBottom="1px" borderColor={borderColor}>
@@ -702,7 +703,7 @@ const QueryLogs = () => {
         </Modal>
 
         {/* Suggested Indexes Modal */}
-        <Modal isOpen={isIndexModalOpen} onClose={onCloseIndexModal} size="xl">
+        <Modal isOpen={isIndexModalOpen} onClose={onCloseIndexModal} size={modalSize}>
           <ModalOverlay backdropFilter="blur(5px)" />
           <ModalContent borderRadius="xl">
             <ModalHeader borderBottom="1px" borderColor={borderColor}>
