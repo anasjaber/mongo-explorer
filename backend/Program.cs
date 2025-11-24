@@ -21,9 +21,9 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Mongo Browser APIs",
+        Title = "Mongo Explorer APIs",
         Version = "v1",
-        Description = "API for Mongo Browser application",
+        Description = "API for Mongo Explorer application",
     });
 });
 
